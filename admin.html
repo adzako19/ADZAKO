@@ -13,7 +13,11 @@
 <section class="panel"><h2>Mes produits</h2><p id="count"></p><div class="tablewrap"><table><thead><tr><th>Photo</th><th>Produit</th><th>Prix</th><th>Stock</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table></div></section>
 </div><p id="message">Vérification de la connexion…</p></main>
 <script>document.getElementById("message").textContent="JavaScript actif : chargement de Supabase…";</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="document.getElementById('message').textContent='La bibliothèque Supabase ne se charge pas. Vérifie la connexion Internet puis recharge.'"></script><script>
+<script>
+document.getElementById("message").textContent="JavaScript actif : chargement de Supabase…";
+function loadSupabase(src){return new Promise((resolve,reject)=>{const s=document.createElement("script");let done=false;const timer=setTimeout(()=>finish(new Error("Délai dépassé")),10000);function finish(err){if(done)return;done=true;clearTimeout(timer);s.onload=null;s.onerror=null;err?reject(err):resolve()}s.src=src;s.onload=()=>window.supabase&&typeof window.supabase.createClient==="function"?finish():finish(new Error("Bibliothèque incomplète"));s.onerror=()=>finish(new Error("Source inaccessible"));document.head.appendChild(s)})}
+(async()=>{try{try{await loadSupabase("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2")}catch(e){document.getElementById("message").textContent="Première source indisponible. Essai d’une autre source…";await loadSupabase("https://unpkg.com/@supabase/supabase-js@2")}document.getElementById("message").textContent="Supabase chargé : initialisation…";
+
 const URL="https://tdxqniqsotgiryulfyiq.supabase.co",KEY="sb_publishable_ptl1fYDMKbBKQTOQKatUew_hpUNAUNh",ADMIN="03b053b4-19b8-41c9-b199-6203da70885b";
 const $=id=>document.getElementById(id);let cats=[],items=[];
 function msg(s){$("message").textContent=s}
@@ -33,4 +37,6 @@ async function upload(file){const name=file.name.normalize("NFD").replace(/[\u03
 $("productForm").onsubmit=async e=>{e.preventDefault();$("save").disabled=true;try{const id=$("pid").value,old=items.find(x=>String(x.id)===String(id)),cat=cats.find(x=>String(x.id)===$("category").value);let image_url=old?.image_url||null;const file=$("photo").files[0];if(file){if(!file.type.startsWith("image/"))throw new Error("Fichier image invalide.");image_url=await upload(file)}const payload={nom:$("name").value.trim(),prix:Number($("price").value),description:$("description").value.trim(),categorie:cat?.nom||null,categorie_id:cat?.id??null,stock:Number($("stock").value||0),actif:$("active").checked,image_url};const result=id?await db.from("produits").update(payload).eq("id",id):await db.from("produits").insert(payload);if(result.error)throw new Error("Enregistrement : "+result.error.message);reset();await refresh();msg(id?"Produit modifié.":"Produit ajouté.")}catch(err){msg(err.message)}finally{$("save").disabled=false}};
 async function removeProduct(id){const p=items.find(x=>String(x.id)===String(id));if(!p||!confirm('Supprimer "'+p.nom+'"?'))return;const {error}=await db.from("produits").delete().eq("id",id);if(error){msg("Suppression : "+error.message);return}await refresh();msg("Produit supprimé.")}
 check();
+
+}catch(e){document.getElementById("message").textContent="Erreur de chargement Supabase : "+(e.message||e);console.error(e)}})();
 </script></body></html>
