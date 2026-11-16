@@ -8,147 +8,63 @@
 <title>ADZAKO - Boutique en ligne</title>
 <style>
 * { box-sizing: border-box; }
-:root {
-  --beige: #f4eadb;
-  --beige-clair: #fbf7f0;
-  --dore: #b58a45;
-  --dore-fonce: #8f682e;
-  --texte: #332b22;
-}
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: var(--beige-clair);
-  color: var(--texte);
-  line-height: 1.6;
-}
-header {
-  background: var(--beige);
-  color: var(--texte);
-  padding: 26px 18px;
-  text-align: center;
-  border-bottom: 2px solid var(--dore);
-}
-header h1 { margin: 0; font-size: 32px; letter-spacing: 3px; }
-header p { margin: 6px 0 0; }
-nav {
-  background: #fff;
-  padding: 14px 10px;
-  text-align: center;
-  border-bottom: 1px solid #eadcc8;
-}
-nav a, footer a {
-  color: var(--dore-fonce);
-  text-decoration: none;
-  margin: 0 9px;
-  font-weight: bold;
-}
-nav a:hover, footer a:hover { text-decoration: underline; }
-.hero {
-  background: linear-gradient(135deg, #f4eadb, #fffaf2);
-  text-align: center;
-  padding: 58px 20px;
-}
-.hero h2 { font-size: 30px; margin: 0 0 10px; }
-.hero p { max-width: 620px; margin: 0 auto 22px; }
-button {
-  background: var(--dore);
-  color: white;
-  border: 0;
-  padding: 13px 22px;
-  border-radius: 7px;
-  cursor: pointer;
-  font-weight: bold;
-}
-button:hover { background: var(--dore-fonce); }
-section { padding: 34px 15px; text-align: center; }
-section h2 { color: var(--dore-fonce); }
-.products {
-  display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
-  gap: 20px;
-  max-width: 1000px;
-  margin: 24px auto 0;
-}
-.product {
-  background: white;
-  padding: 20px;
-  border: 1px solid #eadcc8;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(75, 55, 30, .07);
-}
-.product .photo {
-  background: var(--beige);
-  height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 55px;
-  border-radius: 8px;
-}
-.product h3 { color: var(--dore-fonce); }
-footer {
-  background: var(--beige);
-  color: var(--texte);
-  padding: 25px 15px;
-  text-align: center;
-  border-top: 2px solid var(--dore);
-}
-footer p { margin: 7px 0; }
-.footer-links { margin-top: 14px; }
-@media (max-width: 480px) {
-  header h1 { font-size: 27px; }
-  .hero h2 { font-size: 25px; }
-  nav a { display: inline-block; margin: 5px 8px; }
-}
+:root { --beige:#f4eadb; --beige-clair:#fbf7f0; --dore:#b58a45; --dore-fonce:#8f682e; --texte:#332b22; }
+body { margin:0; font-family:Arial,sans-serif; background:var(--beige-clair); color:var(--texte); line-height:1.6; }
+header { background:var(--beige); color:var(--texte); padding:26px 18px; text-align:center; border-bottom:2px solid var(--dore); }
+header h1 { margin:0; font-size:32px; letter-spacing:3px; }
+header p { margin:6px 0 0; }
+nav { background:#fff; padding:14px 10px; text-align:center; border-bottom:1px solid #eadcc8; }
+nav a, footer a { color:var(--dore-fonce); text-decoration:none; margin:0 9px; font-weight:bold; }
+nav a:hover, footer a:hover { text-decoration:underline; }
+.hero { background:linear-gradient(135deg,#f4eadb,#fffaf2); text-align:center; padding:58px 20px; }
+.hero h2 { font-size:30px; margin:0 0 10px; }
+.hero p { max-width:620px; margin:0 auto 22px; }
+button { background:var(--dore); color:white; border:0; padding:12px 18px; border-radius:7px; cursor:pointer; font-weight:bold; }
+button:hover, button:focus-visible { background:var(--dore-fonce); }
+section { padding:34px 15px; text-align:center; }
+section h2 { color:var(--dore-fonce); }
+.category-list { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; max-width:1000px; margin:20px auto; }
+.category-button { background:#fff; color:var(--dore-fonce); border:1px solid var(--dore); }
+.category-button.active, .category-button:hover { background:var(--dore); color:#fff; }
+.products { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; max-width:1000px; margin:24px auto 0; }
+.product { background:white; padding:20px; border:1px solid #eadcc8; border-radius:12px; box-shadow:0 3px 10px rgba(75,55,30,.07); text-align:center; }
+.product img { width:100%; height:180px; object-fit:contain; background:var(--beige-clair); border-radius:8px; }
+.product .photo { background:var(--beige); height:150px; display:flex; align-items:center; justify-content:center; font-size:55px; border-radius:8px; }
+.product h3 { color:var(--dore-fonce); }
+.price { font-weight:bold; color:var(--dore-fonce); }
+.status-message { max-width:800px; margin:18px auto; padding:12px; color:#66543c; }
+footer { background:var(--beige); color:var(--texte); padding:25px 15px; text-align:center; border-top:2px solid var(--dore); }
+footer p { margin:7px 0; }
+.footer-links { margin-top:14px; }
+@media(max-width:480px) { header h1{font-size:27px;} .hero h2{font-size:25px;} nav a{display:inline-block;margin:5px 8px;} }
 </style>
 </head>
 <body>
-
 <header>
   <h1>ADZAKO</h1>
   <p>Votre boutique, votre satisfaction !</p>
 </header>
-
 <nav>
   <a href="#accueil">Accueil</a>
   <a href="#produits">Nos produits</a>
   <a href="#contact">Contact</a>
 </nav>
-
 <main>
   <div class="hero" id="accueil">
     <h2>Bienvenue chez ADZAKO</h2>
     <p>Découvrez nos divers articles pour femmes et hommes. Faites-vous plaisir avec une expérience d'achat simple et agréable.</p>
     <p><strong>Livraison rapide partout.</strong></p>
-    <button onclick="document.getElementById('produits').scrollIntoView({behavior:'smooth'})">
-      Découvrir nos produits
-    </button>
+    <button onclick="document.getElementById('produits').scrollIntoView({behavior:'smooth'})">Découvrir nos produits</button>
   </div>
 
   <section id="produits">
     <h2>Nos produits</h2>
-    <p>Découvrez quelques catégories disponibles dans notre boutique.</p>
-    <div class="products">
-      <div class="product">
-        <div class="photo" aria-hidden="true">👜</div>
-        <h3>Sacs</h3>
-        <p>Découvrez nos différents modèles de sacs.</p>
-        <button onclick="commander('Sacs')">Commander</button>
-      </div>
-      <div class="product">
-        <div class="photo" aria-hidden="true">🧢</div>
-        <h3>Bonnets</h3>
-        <p>Découvrez nos différents bonnets.</p>
-        <button onclick="commander('Bonnets')">Commander</button>
-      </div>
-      <div class="product">
-        <div class="photo" aria-hidden="true">✨</div>
-        <h3>Accessoires</h3>
-        <p>Découvrez nos accessoires et autres articles.</p>
-        <button onclick="commander('Accessoires')">Commander</button>
-      </div>
+    <p>Choisissez une catégorie pour découvrir les articles disponibles.</p>
+    <div id="categories" class="category-list" aria-label="Catégories de produits">
+      <button class="category-button active" type="button" data-category="all">Tous les produits</button>
     </div>
+    <p id="message" class="status-message" role="status">Chargement des produits…</p>
+    <div id="liste-produits" class="products"></div>
   </section>
 
   <section id="contact">
@@ -157,7 +73,6 @@ footer p { margin: 7px 0; }
     <button onclick="commander('Informations')">Nous contacter</button>
   </section>
 </main>
-
 <footer>
   <h3>ADZAKO</h3>
   <p>Merci de votre confiance.</p>
@@ -169,18 +84,135 @@ footer p { margin: 7px 0; }
 </footer>
 
 <script>
+// Configuration publique Supabase : utilisez uniquement la clé publishable (sb_publishable_...).
+// Ne placez JAMAIS la clé secrète sb_secret_... dans ce fichier.
+const SUPABASE_URL = "https://tdxqniqsotgiryulfyiq.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "COLLER_ICI_LA_CLE_PUBLISHABLE";
+
+let categories = [];
+let produits = [];
+let categorieSelectionnee = "all";
+
 function commander(article) {
-  const numero = "221771260962"; // Remplacer par le numéro WhatsApp ADZAKO sans le signe +
-  if (numero.includes("X")) {
-    alert("Le numéro WhatsApp ADZAKO doit encore être ajouté. Contactez-nous pour finaliser cette configuration.");
-    return;
-  }
-  const message = encodeURIComponent(
-    "Bonjour ADZAKO, je souhaite commander : " + article
-  );
+  const numero = "221771260962";
+  const message = encodeURIComponent("Bonjour ADZAKO, je souhaite commander : " + article);
   window.open("https://wa.me/" + numero + "?text=" + message, "_blank", "noopener");
 }
-</script>
 
+function afficherMessage(texte) {
+  document.getElementById("message").textContent = texte;
+}
+
+function afficherCategories() {
+  const conteneur = document.getElementById("categories");
+  conteneur.innerHTML = "";
+  const toutes = document.createElement("button");
+  toutes.type = "button";
+  toutes.className = "category-button" + (categorieSelectionnee === "all" ? " active" : "");
+  toutes.textContent = "Tous les produits";
+  toutes.addEventListener("click", () => choisirCategorie("all"));
+  conteneur.appendChild(toutes);
+
+  categories.forEach((categorie) => {
+    const bouton = document.createElement("button");
+    bouton.type = "button";
+    bouton.className = "category-button" + (String(categorieSelectionnee) === String(categorie.id) ? " active" : "");
+    bouton.textContent = categorie.nom;
+    bouton.addEventListener("click", () => choisirCategorie(categorie.id));
+    conteneur.appendChild(bouton);
+  });
+}
+
+function choisirCategorie(id) {
+  categorieSelectionnee = id;
+  afficherCategories();
+  afficherProduits();
+}
+
+function afficherProduits() {
+  const conteneur = document.getElementById("liste-produits");
+  conteneur.innerHTML = "";
+  const visibles = categorieSelectionnee === "all"
+    ? produits
+    : produits.filter(p => String(p.categorie_id) === String(categorieSelectionnee));
+
+  if (!visibles.length) {
+    afficherMessage(categorieSelectionnee === "all"
+      ? "Aucun produit n'est encore disponible. Les articles apparaîtront ici dès leur ajout dans la base ADZAKO."
+      : "Aucun produit n'est encore enregistré dans cette catégorie.");
+    return;
+  }
+
+  afficherMessage(visibles.length + " article(s) disponible(s).");
+  visibles.forEach((p) => {
+    const carte = document.createElement("article");
+    carte.className = "product";
+    if (p.image_url) {
+      const image = document.createElement("img");
+      image.src = p.image_url;
+      image.alt = p.nom || "Produit ADZAKO";
+      image.loading = "lazy";
+      image.onerror = () => { image.replaceWith(creerPhotoEmoji()); };
+      carte.appendChild(image);
+    } else {
+      carte.appendChild(creerPhotoEmoji());
+    }
+    const titre = document.createElement("h3");
+    titre.textContent = p.nom || "Article ADZAKO";
+    carte.appendChild(titre);
+    if (p.description) {
+      const description = document.createElement("p");
+      description.textContent = p.description;
+      carte.appendChild(description);
+    }
+    const prix = document.createElement("p");
+    prix.className = "price";
+    prix.textContent = Number(p.prix || 0).toLocaleString("fr-FR") + " FCFA";
+    carte.appendChild(prix);
+    const bouton = document.createElement("button");
+    bouton.type = "button";
+    bouton.textContent = "Commander sur WhatsApp";
+    bouton.addEventListener("click", () => commander(p.nom || "un article ADZAKO"));
+    carte.appendChild(bouton);
+    conteneur.appendChild(carte);
+  });
+}
+
+function creerPhotoEmoji() {
+  const photo = document.createElement("div");
+  photo.className = "photo";
+  photo.setAttribute("aria-hidden", "true");
+  photo.textContent = "🛍️";
+  return photo;
+}
+
+async function chargerBoutique() {
+  if (SUPABASE_PUBLISHABLE_KEY === "COLLER_ICI_LA_CLE_PUBLISHABLE") {
+    afficherMessage("La boutique attend la clé publishable Supabase pour charger les produits. La clé secrète ne doit jamais être utilisée ici.");
+    return;
+  }
+  const headers = {
+    "apikey": SUPABASE_PUBLISHABLE_KEY,
+    "Authorization": "Bearer " + SUPABASE_PUBLISHABLE_KEY
+  };
+  try {
+    const [reponseCategories, reponseProduits] = await Promise.all([
+      fetch(SUPABASE_URL + "/rest/v1/categories?select=id,nom&order=nom.asc", {headers}),
+      fetch(SUPABASE_URL + "/rest/v1/produits?select=*&order=id.desc", {headers})
+    ]);
+    if (!reponseCategories.ok) throw new Error("Impossible de charger les catégories (HTTP " + reponseCategories.status + ").");
+    if (!reponseProduits.ok) throw new Error("Impossible de charger les produits (HTTP " + reponseProduits.status + ").");
+    categories = await reponseCategories.json();
+    produits = await reponseProduits.json();
+    afficherCategories();
+    afficherProduits();
+    if (!categories.length) afficherMessage("Aucune catégorie n'est encore enregistrée dans Supabase. Ajoutez vos catégories pour activer le classement des produits.");
+  } catch (erreur) {
+    afficherMessage("Erreur de chargement : " + erreur.message + " Vérifiez la clé publishable et les autorisations Supabase.");
+  }
+}
+
+chargerBoutique();
+</script>
 </body>
 </html>
