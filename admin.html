@@ -12,6 +12,7 @@
 <label><input id="active" type="checkbox" checked> Visible dans la boutique</label><button id="save">Enregistrer le produit</button><button id="cancel" type="button" class="hidden">Annuler</button></form></section>
 <section class="panel"><h2>Mes produits</h2><p id="count"></p><div class="tablewrap"><table><thead><tr><th>Photo</th><th>Produit</th><th>Prix</th><th>Stock</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table></div></section>
 </div><p id="message">Vérification de la connexion…</p></main>
+<script>document.getElementById("message").textContent="JavaScript actif : chargement de Supabase…";</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="document.getElementById('message').textContent='La bibliothèque Supabase ne se charge pas. Vérifie la connexion Internet puis recharge.'"></script><script>
 const URL="https://tdxqniqsotgiryulfyiq.supabase.co",KEY="sb_publishable_ptl1fYDMKbBKQTOQKatUew_hpUNAUNh",ADMIN="03b053b4-19b8-41c9-b199-6203da70885b";
 const $=id=>document.getElementById(id);let cats=[],items=[];
