@@ -1,67 +1,84 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ADZAKO, votre boutique en ligne de divers articles pour femmes et hommes. Livraison rapide partout.">
+<meta name="theme-color" content="#f4eadb">
 <title>ADZAKO - Boutique en ligne</title>
 <style>
 * { box-sizing: border-box; }
+:root {
+  --beige: #f4eadb;
+  --beige-clair: #fbf7f0;
+  --dore: #b58a45;
+  --dore-fonce: #8f682e;
+  --texte: #332b22;
+}
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #f8f8f8;
-  color: #222;
+  background: var(--beige-clair);
+  color: var(--texte);
+  line-height: 1.6;
 }
 header {
-  background: #172c25;
-  color: white;
-  padding: 22px;
+  background: var(--beige);
+  color: var(--texte);
+  padding: 26px 18px;
   text-align: center;
+  border-bottom: 2px solid var(--dore);
 }
-header h1 { margin: 0; font-size: 30px; }
-header p { margin-bottom: 0; }
+header h1 { margin: 0; font-size: 32px; letter-spacing: 3px; }
+header p { margin: 6px 0 0; }
 nav {
-  background: white;
-  padding: 15px;
+  background: #fff;
+  padding: 14px 10px;
   text-align: center;
+  border-bottom: 1px solid #eadcc8;
 }
-nav a {
-  color: #172c25;
+nav a, footer a {
+  color: var(--dore-fonce);
   text-decoration: none;
-  margin: 10px;
+  margin: 0 9px;
   font-weight: bold;
 }
+nav a:hover, footer a:hover { text-decoration: underline; }
 .hero {
-  background: #e6eee8;
+  background: linear-gradient(135deg, #f4eadb, #fffaf2);
   text-align: center;
-  padding: 55px 20px;
+  padding: 58px 20px;
 }
-.hero h2 { font-size: 30px; }
-.hero button, .product button {
-  background: #172c25;
+.hero h2 { font-size: 30px; margin: 0 0 10px; }
+.hero p { max-width: 620px; margin: 0 auto 22px; }
+button {
+  background: var(--dore);
   color: white;
   border: 0;
   padding: 13px 22px;
-  border-radius: 6px;
+  border-radius: 7px;
   cursor: pointer;
+  font-weight: bold;
 }
-section { padding: 30px 15px; text-align: center; }
+button:hover { background: var(--dore-fonce); }
+section { padding: 34px 15px; text-align: center; }
+section h2 { color: var(--dore-fonce); }
 .products {
   display: grid;
   grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
   gap: 20px;
   max-width: 1000px;
-  margin: auto;
+  margin: 24px auto 0;
 }
 .product {
   background: white;
   padding: 20px;
+  border: 1px solid #eadcc8;
   border-radius: 12px;
-  box-shadow: 0 2px 8px #ddd;
+  box-shadow: 0 3px 10px rgba(75, 55, 30, .07);
 }
 .product .photo {
-  background: #e9eee9;
+  background: var(--beige);
   height: 150px;
   display: flex;
   align-items: center;
@@ -69,11 +86,20 @@ section { padding: 30px 15px; text-align: center; }
   font-size: 55px;
   border-radius: 8px;
 }
+.product h3 { color: var(--dore-fonce); }
 footer {
-  background: #172c25;
-  color: white;
-  padding: 25px;
+  background: var(--beige);
+  color: var(--texte);
+  padding: 25px 15px;
   text-align: center;
+  border-top: 2px solid var(--dore);
+}
+footer p { margin: 7px 0; }
+.footer-links { margin-top: 14px; }
+@media (max-width: 480px) {
+  header h1 { font-size: 27px; }
+  .hero h2 { font-size: 25px; }
+  nav a { display: inline-block; margin: 5px 8px; }
 }
 </style>
 </head>
@@ -90,63 +116,69 @@ footer {
   <a href="#contact">Contact</a>
 </nav>
 
-<div class="hero" id="accueil">
-  <h2>Bienvenue chez ADZAKO</h2>
-  <p>Découvrez nos articles et profitez d'une expérience d'achat simple.</p>
-  <button onclick="document.getElementById('produits').scrollIntoView()">
-    Découvrir nos produits
-  </button>
-</div>
-
-<section id="produits">
-  <h2>Nos produits</h2>
-  <p>Découvrez quelques articles de notre boutique.</p>
-
-  <div class="products">
-    <div class="product">
-      <div class="photo">👜</div>
-      <h3>Sacs</h3>
-      <p>Découvrez nos modèles de sacs.</p>
-      <button onclick="commander('Sacs')">Commander</button>
-    </div>
-
-    <div class="product">
-      <div class="photo">🧢</div>
-      <h3>Bonnets</h3>
-      <p>Découvrez nos différents bonnets.</p>
-      <button onclick="commander('Bonnets')">Commander</button>
-    </div>
-
-    <div class="product">
-      <div class="photo">✨</div>
-      <h3>Accessoires</h3>
-      <p>Découvrez nos accessoires.</p>
-      <button onclick="commander('Accessoires')">Commander</button>
-    </div>
+<main>
+  <div class="hero" id="accueil">
+    <h2>Bienvenue chez ADZAKO</h2>
+    <p>Découvrez nos divers articles pour femmes et hommes. Faites-vous plaisir avec une expérience d'achat simple et agréable.</p>
+    <p><strong>Livraison rapide partout.</strong></p>
+    <button onclick="document.getElementById('produits').scrollIntoView({behavior:'smooth'})">
+      Découvrir nos produits
+    </button>
   </div>
-</section>
 
-<section id="contact">
-  <h2>Contactez ADZAKO</h2>
-  <p>Une question ou une commande ? Contactez-nous sur WhatsApp.</p>
-  <button onclick="commander('Informations')">
-    Nous contacter
-  </button>
-</section>
+  <section id="produits">
+    <h2>Nos produits</h2>
+    <p>Découvrez quelques catégories disponibles dans notre boutique.</p>
+    <div class="products">
+      <div class="product">
+        <div class="photo" aria-hidden="true">👜</div>
+        <h3>Sacs</h3>
+        <p>Découvrez nos différents modèles de sacs.</p>
+        <button onclick="commander('Sacs')">Commander</button>
+      </div>
+      <div class="product">
+        <div class="photo" aria-hidden="true">🧢</div>
+        <h3>Bonnets</h3>
+        <p>Découvrez nos différents bonnets.</p>
+        <button onclick="commander('Bonnets')">Commander</button>
+      </div>
+      <div class="product">
+        <div class="photo" aria-hidden="true">✨</div>
+        <h3>Accessoires</h3>
+        <p>Découvrez nos accessoires et autres articles.</p>
+        <button onclick="commander('Accessoires')">Commander</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <h2>Contactez ADZAKO</h2>
+    <p>Une question ou une commande ? Écrivez-nous sur WhatsApp.</p>
+    <button onclick="commander('Informations')">Nous contacter</button>
+  </section>
+</main>
 
 <footer>
   <h3>ADZAKO</h3>
-  <p>Votre boutique en ligne au Sénégal.</p>
+  <p>Merci de votre confiance.</p>
   <p>© 2026 ADZAKO - Tous droits réservés.</p>
+  <div class="footer-links">
+    <a href="conditions.html">Conditions générales</a>
+    <a href="confidentialite.html">Confidentialité</a>
+  </div>
 </footer>
 
 <script>
 function commander(article) {
-  const numero = "221XXXXXXXXX";
+  const numero = "221XXXXXXXXX"; // Remplacer par le numéro WhatsApp ADZAKO sans le signe +
+  if (numero.includes("X")) {
+    alert("Le numéro WhatsApp ADZAKO doit encore être ajouté. Contactez-nous pour finaliser cette configuration.");
+    return;
+  }
   const message = encodeURIComponent(
     "Bonjour ADZAKO, je souhaite commander : " + article
   );
-  window.open("https://wa.me/" + numero + "?text=" + message, "_blank");
+  window.open("https://wa.me/" + numero + "?text=" + message, "_blank", "noopener");
 }
 </script>
 
