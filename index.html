@@ -86,7 +86,31 @@ function openCart(){renderCart();document.getElementById("cartOverlay").classLis
 function closeCart(){document.getElementById("cartOverlay").classList.remove("open")}
 document.getElementById("openCart").onclick=openCart;document.getElementById("closeCart").onclick=closeCart;document.getElementById("cartOverlay").addEventListener("click",e=>{if(e.target.id==="cartOverlay")closeCart()});
 document.getElementById("searchForm").addEventListener("submit",e=>{e.preventDefault();searchTerm=document.getElementById("searchInput").value.trim().toLowerCase();renderProducts();document.getElementById("produits").scrollIntoView({behavior:"smooth"})});
-document.getElementById("checkout").onclick=()=>{const lines=cart.map(line=>{const p=products.find(x=>String(x.id)===String(line.id));return p?("• "+p.nom+" × "+line.qty+" = "+money(Number(p.prix||0)*line.qty)):null}).filter(Boolean);const total=cart.reduce((sum,line)=>{const p=products.find(x=>String(x.id)===String(line.id));return sum+(p?Number(p.prix||0)*line.qty:0)},0);const text=encodeURIComponent("Bonjour ADZAKO, je souhaite passer cette commande :\n"+lines.join("\n")+"\nTotal produits : "+money(total)+"\nMerci de me confirmer la livraison.");window.open("https://wa.me/"+WHATSAPP_NUMBER+"?text="+text,"_blank","noopener")};
+function cartTotalValue(){return cart.reduce((sum,line)=>{const p=products.find(x=>String(x.id)===String(line.id));return sum+(p?Number(p.prix||0)*line.qty:0)},0)}
+function openCheckout(){if(!cart.length){alert("Votre panier est vide.");return}document.getElementById("checkoutOrderTotal").textContent="Total des articles : "+money(cartTotalValue())+". Les frais de livraison seront confirmés par ADZAKO.";document.getElementById("checkoutOverlay").classList.add("open")}
+document.getElementById("checkout").textContent="Continuer la commande";
+document.getElementById("checkout").onclick=openCheckout;
+document.getElementById("closeCheckout").onclick=()=>document.getElementById("checkoutOverlay").classList.remove("open");
+document.getElementById("checkoutOverlay").addEventListener("click",e=>{if(e.target.id==="checkoutOverlay")document.getElementById("checkoutOverlay").classList.remove("open")});
+document.getElementById("checkoutForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ if(!cart.length){alert("Votre panier est vide.");return}
+ const form=e.currentTarget,data=new FormData(form),button=document.getElementById("submitOrder");
+ const lines=cart.map(line=>{const p=products.find(x=>String(x.id)===String(line.id));return p?{produit_id:p.id,nom:p.nom,quantite:line.qty,prix_unitaire:Number(p.prix||0),sous_total:Number(p.prix||0)*line.qty}:null}).filter(Boolean);
+ if(!lines.length){alert("Les produits du panier ne sont plus disponibles. Rechargez la boutique.");return}
+ const total=lines.reduce((sum,x)=>sum+x.sous_total,0);
+ const payload={nom_client:String(data.get("nom_client")).trim(),telephone:String(data.get("telephone")).trim(),ville:String(data.get("ville")).trim(),quartier:String(data.get("quartier")).trim(),adresse:String(data.get("adresse")).trim(),commentaire:String(data.get("commentaire")||"").trim(),articles:lines,total,statut:"en_attente"};
+ button.disabled=true;button.textContent="Enregistrement…";
+ try{
+  const response=await fetch(SUPABASE_URL+"/rest/v1/commandes",{method:"POST",headers:{"apikey":SUPABASE_PUBLISHABLE_KEY,"Authorization":"Bearer "+SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json","Prefer":"return=representation"},body:JSON.stringify(payload)});
+  const result=await response.json().catch(()=>[]);
+  if(!response.ok)throw new Error(result.message||result.details||"Erreur HTTP "+response.status);
+  const orderId=result[0]?.id;
+  const waLines=lines.map(x=>"• "+x.nom+" × "+x.quantite+" = "+money(x.sous_total));
+  const waText=encodeURIComponent("Bonjour ADZAKO, je viens d'enregistrer la commande"+(orderId?" n° "+orderId:"")+" au nom de "+payload.nom_client+".\nTéléphone : "+payload.telephone+"\nVille : "+payload.ville+"\nQuartier : "+payload.quartier+"\nAdresse : "+payload.adresse+"\n\n"+waLines.join("\n")+"\nTotal : "+money(total)+"\n"+(payload.commentaire?"Commentaire : "+payload.commentaire+"\n":"")+"Merci de confirmer ma commande et les frais de livraison.");
+  document.getElementById("checkoutContent").innerHTML='<div class="checkout-result"><b>Commande enregistrée avec succès !</b><br>Votre commande'+(orderId?" n° "+orderId:"")+' a été transmise à ADZAKO. Pour finaliser, envoyez les détails par WhatsApp.</div><a class="whatsapp-confirm" target="_blank" rel="noopener" href="https://wa.me/'+WHATSAPP_NUMBER+'?text='+waText+'">Confirmer sur WhatsApp</a>';
+ }catch(err){alert("Impossible d’enregistrer la commande : "+err.message);button.disabled=false;button.textContent="Réessayer";}
+});
 async function loadStore(){try{const headers={"apikey":SUPABASE_PUBLISHABLE_KEY,"Authorization":"Bearer "+SUPABASE_PUBLISHABLE_KEY};const [cr,pr]=await Promise.all([fetch(SUPABASE_URL+"/rest/v1/categories?select=id,nom&order=nom.asc",{headers}),fetch(SUPABASE_URL+"/rest/v1/produits?select=*&order=id.desc",{headers})]);if(!cr.ok)throw new Error("Catégories : HTTP "+cr.status);if(!pr.ok)throw new Error("Produits : HTTP "+pr.status);categories=await cr.json();products=await pr.json();renderCategories();renderProducts();renderCart()}catch(e){message("Impossible de charger les produits : "+e.message)}}
 renderCart();loadStore();
 </script>
