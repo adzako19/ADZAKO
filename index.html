@@ -135,9 +135,10 @@ function choisirCategorie(id) {
 function afficherProduits() {
   const conteneur = document.getElementById("liste-produits");
   conteneur.innerHTML = "";
+  const produitsActifs = produits.filter(p => p.actif !== false);
   const visibles = categorieSelectionnee === "all"
-    ? produits
-    : produits.filter(p => String(p.categorie_id) === String(categorieSelectionnee));
+    ? produitsActifs
+    : produitsActifs.filter(p => String(p.categorie_id) === String(categorieSelectionnee));
 
   if (!visibles.length) {
     afficherMessage(categorieSelectionnee === "all"
