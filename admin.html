@@ -14,8 +14,10 @@
 </div><p id="message">Vérification de la connexion…</p></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="document.getElementById('message').textContent='La bibliothèque Supabase ne se charge pas. Vérifie la connexion Internet puis recharge.'"></script><script>
 const URL="https://tdxqniqsotgiryulfyiq.supabase.co",KEY="sb_publishable_ptl1fYDMKbBKQTOQKatUew_hpUNAUNh",ADMIN="03b053b4-19b8-41c9-b199-6203da70885b";
-const db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);let cats=[],items=[];
+const $=id=>document.getElementById(id);let cats=[],items=[];
 function msg(s){$("message").textContent=s}
+if(!window.supabase || typeof window.supabase.createClient!=="function"){msg("Erreur : la bibliothèque Supabase est chargée mais son interface JavaScript est introuvable. Recharge la page ou essaie un autre navigateur.");throw new Error("Supabase createClient indisponible")}
+const db=window.supabase.createClient(URL,KEY);
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 async function openAdmin(){ $("loginPanel").classList.add("hidden");$("dashboard").classList.remove("hidden");$("logout").classList.remove("hidden");await refresh()}
 async function check(){try{msg("Vérification de la connexion à Supabase…");const result=await Promise.race([db.auth.getSession(),new Promise((_,reject)=>setTimeout(()=>reject(new Error("La vérification prend trop de temps. Vérifie Internet puis recharge la page.")),12000))]);const {data,error}=result;if(error)throw error;if(data.session?.user.id===ADMIN){await openAdmin()}else{$("loginPanel").classList.remove("hidden");msg("Session non trouvée. Connecte-toi avec ton compte administrateur.")}}catch(err){$("loginPanel").classList.remove("hidden");msg("Problème de connexion : "+(err.message||"erreur inconnue")+". Vérifie Internet puis recharge la page.")}}
