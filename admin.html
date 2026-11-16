@@ -1,67 +1,33 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#f4eadb">
-<title>Administration - ADZAKO</title>
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADMIN - ADZAKO</title>
 <style>
-*{box-sizing:border-box}body{margin:0;padding:24px 16px;font-family:Arial,sans-serif;background:#fbf7f0;color:#332b22}
-main{max-width:520px;margin:35px auto;background:#fff;padding:25px;border:1px solid #eadcc8;border-radius:14px;box-shadow:0 4px 16px #332b2212}
-h1{color:#8f682e;text-align:center;letter-spacing:2px}h2{font-size:20px}
-label{display:block;margin:14px 0 6px;font-weight:bold}input{width:100%;padding:12px;border:1px solid #cdbb9e;border-radius:7px;font-size:16px}
-button{width:100%;margin-top:18px;padding:13px;background:#b58a45;color:#fff;border:0;border-radius:7px;font-weight:bold;font-size:16px}
-button:disabled{opacity:.6}#message{padding:12px;background:#f4eadb;border-radius:7px;white-space:pre-wrap}
-a{color:#8f682e}small{display:block;margin-top:18px;color:#66543c}
-</style>
-</head>
-<body>
-<main>
-<h1>ADZAKO</h1>
-<h2>Connexion administrateur</h2>
-<p>Connecte-toi avec l'adresse e-mail et le mot de passe de ton compte Supabase.</p>
-<form id="login">
-<label for="email">Adresse e-mail</label>
-<input id="email" type="email" autocomplete="username" required>
-<label for="password">Mot de passe</label>
-<input id="password" type="password" autocomplete="current-password" required>
-<button id="submit" type="submit">Se connecter</button>
-</form>
-<p id="message" role="status">Accès réservé à l'administrateur ADZAKO.</p>
-<p><a href="index.html">← Retour à la boutique</a></p>
-<small>La clé utilisée ici est la clé publique publishable. Aucun mot de passe n'est enregistré sur cette page.</small>
-</main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const SUPABASE_URL = "https://tdxqniqsotgiryulfyiq.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ptl1fYDMKbBKQTOQKatUew_hpUNAUNh";
-const ADMIN_UID = "03b053b4-19b8-41c9-b199-6203da70885b";
-const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-const form = document.getElementById("login");
-const message = document.getElementById("message");
-const submit = document.getElementById("submit");
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  submit.disabled = true;
-  message.textContent = "Connexion en cours…";
-  const {data, error} = await client.auth.signInWithPassword({
-    email: document.getElementById("email").value.trim(),
-    password: document.getElementById("password").value
-  });
-  if (error) {
-    message.textContent = "Connexion impossible : " + error.message;
-    submit.disabled = false;
-    return;
-  }
-  if (!data.user || data.user.id !== ADMIN_UID) {
-    await client.auth.signOut();
-    message.textContent = "Ce compte n'est pas autorisé à administrer ADZAKO.";
-    submit.disabled = false;
-    return;
-  }
-  message.textContent = "Connexion réussie. Ton compte administrateur est reconnu. La prochaine étape consiste à activer les outils de gestion des produits.";
-  form.hidden = true;
-});
-</script>
-</body>
-</html>
+*{box-sizing:border-box}body{font-family:Arial;background:#fbf7f0;color:#332b22;margin:0;padding:16px}main{max-width:900px;margin:auto}header,.panel{background:white;border:1px solid #eadcc8;border-radius:12px;padding:18px;margin:14px 0}h1,h2{color:#8f682e}label{display:block;font-weight:bold;margin:12px 0 5px}input,textarea,select{width:100%;padding:11px;border:1px solid #cdbb9e;border-radius:7px;font-size:16px}input[type=checkbox]{width:auto}button{padding:11px 15px;background:#b58a45;color:white;border:0;border-radius:7px;font-weight:bold;margin:5px 4px 5px 0}button.danger{background:#a33}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.hidden{display:none!important}#message{background:#f4eadb;padding:12px;border-radius:7px;white-space:pre-wrap}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:9px;border-bottom:1px solid #eadcc8}td img{width:55px;height:55px;object-fit:contain}
+</style></head><body><main>
+<header><h1>ADZAKO · ADMIN</h1><a href="index.html">Retour à la boutique</a><button id="logout" class="hidden">Déconnexion</button></header>
+<section id="loginPanel" class="panel"><h2>Connexion administrateur</h2><form id="login"><label>E-mail</label><input id="email" type="email" required autocomplete="username"><label>Mot de passe</label><input id="password" type="password" required autocomplete="current-password"><button id="loginBtn">Se connecter</button></form></section>
+<div id="dashboard" class="hidden">
+<section class="panel"><h2 id="formTitle">Ajouter un produit</h2><form id="productForm"><input id="pid" type="hidden">
+<div class="grid"><div><label>Nom *</label><input id="name" required></div><div><label>Prix en FCFA *</label><input id="price" type="number" min="0" required></div><div><label>Catégorie</label><select id="category"><option value="">Sans catégorie</option></select></div><div><label>Stock</label><input id="stock" type="number" min="0" value="0"></div></div>
+<label>Description</label><textarea id="description"></textarea><label>Photo</label><input id="photo" type="file" accept="image/*"><p>Pour garder la photo existante lors d'une modification, ne sélectionne aucun nouveau fichier.</p>
+<label><input id="active" type="checkbox" checked> Visible dans la boutique</label><button id="save">Enregistrer le produit</button><button id="cancel" type="button" class="hidden">Annuler</button></form></section>
+<section class="panel"><h2>Mes produits</h2><p id="count"></p><div class="tablewrap"><table><thead><tr><th>Photo</th><th>Produit</th><th>Prix</th><th>Stock</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+</div><p id="message">Vérification de la connexion…</p></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
+const URL="https://tdxqniqsotgiryulfyiq.supabase.co",KEY="sb_publishable_ptl1fYDMKbBKQTOQKatUew_hpUNAUNh",ADMIN="03b053b4-19b8-41c9-b199-6203da70885b";
+const db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);let cats=[],items=[];
+function msg(s){$("message").textContent=s}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+async function openAdmin(){ $("loginPanel").classList.add("hidden");$("dashboard").classList.remove("hidden");$("logout").classList.remove("hidden");await refresh()}
+async function check(){const {data,error}=await db.auth.getSession();if(error){msg(error.message);return}if(data.session?.user.id===ADMIN)openAdmin();else{$("loginPanel").classList.remove("hidden");msg("Connecte-toi pour gérer les produits.")}}
+$("login").onsubmit=async e=>{e.preventDefault();$("loginBtn").disabled=true;const {data,error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error)msg("Connexion impossible : "+error.message);else if(data.user.id!==ADMIN){await db.auth.signOut();msg("Compte non autorisé.")}else{msg("Connexion réussie.");$("login").reset();await openAdmin()}$("loginBtn").disabled=false};
+$("logout").onclick=async()=>{await db.auth.signOut();$("dashboard").classList.add("hidden");$("logout").classList.add("hidden");$("loginPanel").classList.remove("hidden");msg("Déconnecté.")};
+async function refresh(){msg("Chargement…");const [p,c]=await Promise.all([db.from("produits").select("*").order("id",{ascending:false}),db.from("categories").select("id,nom").order("nom")]);if(p.error){msg("Erreur produits : "+p.error.message);return}items=p.data||[];cats=c.error?[]:(c.data||[]);$("category").innerHTML='<option value="">Sans catégorie</option>'+cats.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.nom)+'</option>').join("");render();msg("Produits chargés. Tu peux les gérer.") }
+function render(){$("count").textContent=items.length+" produit(s)";$("rows").innerHTML=items.map(p=>'<tr><td>'+(p.image_url?'<img src="'+esc(p.image_url)+'">':'—')+'</td><td>'+esc(p.nom)+(p.actif===false?' (masqué)':'')+'</td><td>'+Number(p.prix||0).toLocaleString("fr-FR")+' FCFA</td><td>'+Number(p.stock||0)+'</td><td><button data-edit="'+p.id+'">Modifier</button><button class="danger" data-del="'+p.id+'">Supprimer</button></td></tr>').join("");document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>edit(b.dataset.edit));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>removeProduct(b.dataset.del))}
+function edit(id){const p=items.find(x=>String(x.id)===String(id));if(!p)return;$("pid").value=p.id;$("name").value=p.nom||"";$("price").value=p.prix||0;$("description").value=p.description||"";$("stock").value=p.stock||0;$("active").checked=p.actif!==false;$("category").value=p.categorie_id??"";$("photo").value="";$("formTitle").textContent="Modifier le produit";$("save").textContent="Enregistrer les modifications";$("cancel").classList.remove("hidden");window.scrollTo(0,0)}
+function reset(){ $("productForm").reset();$("pid").value="";$("stock").value=0;$("active").checked=true;$("formTitle").textContent="Ajouter un produit";$("save").textContent="Enregistrer le produit";$("cancel").classList.add("hidden")}
+$("cancel").onclick=reset;
+async function upload(file){const name=file.name.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9._-]/g,"-");const path=Date.now()+"-"+name;const {error}=await db.storage.from("produits").upload(path,file,{upsert:false,contentType:file.type});if(error)throw new Error("Envoi photo : "+error.message);return db.storage.from("produits").getPublicUrl(path).data.publicUrl}
+$("productForm").onsubmit=async e=>{e.preventDefault();$("save").disabled=true;try{const id=$("pid").value,old=items.find(x=>String(x.id)===String(id)),cat=cats.find(x=>String(x.id)===$("category").value);let image_url=old?.image_url||null;const file=$("photo").files[0];if(file){if(!file.type.startsWith("image/"))throw new Error("Fichier image invalide.");image_url=await upload(file)}const payload={nom:$("name").value.trim(),prix:Number($("price").value),description:$("description").value.trim(),categorie:cat?.nom||null,categorie_id:cat?.id??null,stock:Number($("stock").value||0),actif:$("active").checked,image_url};const result=id?await db.from("produits").update(payload).eq("id",id):await db.from("produits").insert(payload);if(result.error)throw new Error("Enregistrement : "+result.error.message);reset();await refresh();msg(id?"Produit modifié.":"Produit ajouté.")}catch(err){msg(err.message)}finally{$("save").disabled=false}};
+async function removeProduct(id){const p=items.find(x=>String(x.id)===String(id));if(!p||!confirm('Supprimer "'+p.nom+'"?'))return;const {error}=await db.from("produits").delete().eq("id",id);if(error){msg("Suppression : "+error.message);return}await refresh();msg("Produit supprimé.")}
+check();
+</script></body></html>
