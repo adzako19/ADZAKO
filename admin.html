@@ -14,6 +14,12 @@
 <p id="ordersCount">Chargement des commandes…</p>
 <div class="tablewrap"><table><thead><tr><th>Date</th><th>Client</th><th>Articles</th><th>Total</th><th>Statut</th><th>Action</th></tr></thead><tbody id="orderRows"><tr><td colspan="6">Chargement…</td></tr></tbody></table></div>
 </section>
+<section class="panel"><h2>Avis clients</h2>
+<p>Consulte les avis envoyés par les clients. Publie uniquement les avis que tu souhaites afficher dans la boutique.</p>
+<button type="button" id="refreshReviews">Actualiser les avis</button>
+<p id="reviewsCount">Chargement des avis…</p>
+<div class="tablewrap"><table><thead><tr><th>Date</th><th>Produit</th><th>Client</th><th>Note</th><th>Commentaire</th><th>Statut / Action</th></tr></thead><tbody id="reviewRows"><tr><td colspan="6">Chargement…</td></tr></tbody></table></div>
+</section>
 <section class="panel"><h2 id="formTitle">Ajouter un produit</h2><form id="productForm"><input id="pid" type="hidden">
 <div class="grid"><div><label>Nom *</label><input id="name" required></div><div><label>Prix en FCFA *</label><input id="price" type="number" min="0" required></div><div><label>Catégorie</label><select id="category"><option value="">Sans catégorie</option></select></div><div><label>Stock</label><input id="stock" type="number" min="0" value="0"></div><div><label>Couleur</label><input id="color" type="text" placeholder="Ex. Noir, blanc, rose"></div></div>
 <label>Description</label><textarea id="description"></textarea><label>Photo</label><input id="photo" type="file" accept="image/*"><p>Pour garder la photo existante lors d'une modification, ne sélectionne aucun nouveau fichier.</p>
@@ -33,7 +39,7 @@ function msg(s){$("message").textContent=s}
 if(!window.supabase || typeof window.supabase.createClient!=="function"){msg("Erreur : la bibliothèque Supabase est chargée mais son interface JavaScript est introuvable. Recharge la page ou essaie un autre navigateur.");throw new Error("Supabase createClient indisponible")}
 const db=window.supabase.createClient(URL,KEY);
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-async function openAdmin(){ $("loginPanel").classList.add("hidden");$("dashboard").classList.remove("hidden");$("logout").classList.remove("hidden");await Promise.all([refresh(),loadOrders()])}
+async function openAdmin(){ $("loginPanel").classList.add("hidden");$("dashboard").classList.remove("hidden");$("logout").classList.remove("hidden");await Promise.all([refresh(),loadOrders(),loadReviews()])}
 async function check(){try{msg("Vérification de la connexion à Supabase…");const result=await Promise.race([db.auth.getSession(),new Promise((_,reject)=>setTimeout(()=>reject(new Error("La vérification prend trop de temps. Vérifie Internet puis recharge la page.")),12000))]);const {data,error}=result;if(error)throw error;if(data.session?.user.id===ADMIN){await openAdmin()}else{$("loginPanel").classList.remove("hidden");msg("Session non trouvée. Connecte-toi avec ton compte administrateur.")}}catch(err){$("loginPanel").classList.remove("hidden");msg("Problème de connexion : "+(err.message||"erreur inconnue")+". Vérifie Internet puis recharge la page.")}}
 $("login").onsubmit=async e=>{e.preventDefault();$("loginBtn").disabled=true;const {data,error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error)msg("Connexion impossible : "+error.message);else if(data.user.id!==ADMIN){await db.auth.signOut();msg("Compte non autorisé.")}else{msg("Connexion réussie.");$("login").reset();await openAdmin()}$("loginBtn").disabled=false};
 $("logout").onclick=async()=>{await db.auth.signOut();$("dashboard").classList.add("hidden");$("logout").classList.add("hidden");$("loginPanel").classList.remove("hidden");msg("Déconnecté.")};
@@ -66,6 +72,31 @@ function renderSalesCharts(orders){
     }).join("");
   }
   draw("dailyChart",daily);draw("monthlyChart",monthly);
+}
+async function loadReviews(){
+  $("reviewsCount").textContent="Chargement des avis…";
+  $("reviewRows").innerHTML='<tr><td colspan="6">Chargement…</td></tr>';
+  const {data,error}=await db.from("avis_produits").select("id,produit_id,nom_client,note,commentaire,statut,created_at").order("created_at",{ascending:false});
+  if(error){$("reviewsCount").textContent="Impossible de charger les avis : "+error.message;$("reviewRows").innerHTML='<tr><td colspan="6">Vérifie les autorisations des avis dans Supabase.</td></tr>';return}
+  const rows=data||[];
+  $("reviewsCount").textContent=rows.length+" avis enregistré(s)";
+  $("reviewRows").innerHTML=rows.length?rows.map(r=>{
+    const product=items.find(p=>String(p.id)===String(r.produit_id));
+    const date=r.created_at?new Date(r.created_at).toLocaleString("fr-FR"):"—";
+    const status=r.statut==="publie"?"Publié":"En attente";
+    const action=r.statut==="publie"
+      ?'<button type="button" data-review-status="'+esc(r.id)+'" data-next-status="en_attente">Retirer</button>'
+      :'<button type="button" data-review-status="'+esc(r.id)+'" data-next-status="publie">Publier</button>';
+    return '<tr><td>'+esc(date)+'</td><td>'+esc(product?.nom||("Produit #"+r.produit_id))+'</td><td>'+esc(r.nom_client)+'</td><td>'+Number(r.note||0)+'/5</td><td>'+esc(r.commentaire||"—")+'</td><td>'+esc(status)+'<br>'+action+'</td></tr>';
+  }).join(""):'<tr><td colspan="6">Aucun avis reçu pour le moment.</td></tr>';
+  document.querySelectorAll("[data-review-status]").forEach(btn=>btn.onclick=async()=>{
+    const id=btn.dataset.reviewStatus,next=btn.dataset.nextStatus;
+    btn.disabled=true;msg(next==="publie"?"Publication de l’avis…":"Retrait de l’avis…");
+    const {error}=await db.from("avis_produits").update({statut:next}).eq("id",id);
+    if(error){msg("Impossible de modifier cet avis : "+error.message);btn.disabled=false;return}
+    msg(next==="publie"?"Avis publié dans la boutique.":"Avis retiré de la boutique.");
+    await loadReviews();
+  });
 }
 async function loadOrders(){
   $("ordersCount").textContent="Chargement des commandes…";
@@ -138,6 +169,7 @@ async function loadOrders(){
   });
 }
 $("refreshOrders").onclick=loadOrders;
+$("refreshReviews").onclick=loadReviews;
 async function refresh(){msg("Chargement…");const [p,c]=await Promise.all([db.from("produits").select("*").order("id",{ascending:false}),db.from("categories").select("id,nom").order("nom")]);if(p.error){msg("Erreur produits : "+p.error.message);return}items=p.data||[];cats=c.error?[]:(c.data||[]);$("category").innerHTML='<option value="">Sans catégorie</option>'+cats.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.nom)+'</option>').join("");render();msg("Produits chargés. Tu peux les gérer.") }
 function render(){$("count").textContent=items.length+" produit(s)";$("rows").innerHTML=items.map(p=>'<tr><td>'+(p.image_url?'<img src="'+esc(p.image_url)+'">':'—')+'</td><td>'+esc(p.nom)+(p.actif===false?' (masqué)':'')+'</td><td>'+Number(p.prix||0).toLocaleString("fr-FR")+' FCFA</td><td>'+Number(p.stock||0)+'</td><td><button data-edit="'+p.id+'">Modifier</button><button class="danger" data-del="'+p.id+'">Supprimer</button></td></tr>').join("");document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>edit(b.dataset.edit));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>removeProduct(b.dataset.del))}
 function edit(id){const p=items.find(x=>String(x.id)===String(id));if(!p)return;$("pid").value=p.id;$("name").value=p.nom||"";$("price").value=p.prix||0;$("description").value=p.description||"";$("stock").value=p.stock||0;$("color").value=p.couleur||"";$("active").checked=p.actif!==false;$("category").value=p.categorie_id??"";$("photo").value="";$("formTitle").textContent="Modifier le produit";$("save").textContent="Enregistrer les modifications";$("cancel").classList.remove("hidden");window.scrollTo(0,0)}
