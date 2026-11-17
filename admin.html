@@ -6,6 +6,12 @@
 <header><h1>ADZAKO · ADMIN</h1><a href="index.html">Retour à la boutique</a><button id="logout" class="hidden">Déconnexion</button></header>
 <section id="loginPanel" class="panel"><h2>Connexion administrateur</h2><form id="login"><label>E-mail</label><input id="email" type="email" required autocomplete="username"><label>Mot de passe</label><input id="password" type="password" required autocomplete="current-password"><button id="loginBtn">Se connecter</button></form></section>
 <div id="dashboard" class="hidden">
+<section class="panel"><h2>Commandes clients</h2>
+<p>Consulte les commandes reçues et actualise leur statut.</p>
+<button type="button" id="refreshOrders">Actualiser les commandes</button>
+<p id="ordersCount">Chargement des commandes…</p>
+<div class="tablewrap"><table><thead><tr><th>Date</th><th>Client</th><th>Articles</th><th>Total</th><th>Statut</th></tr></thead><tbody id="orderRows"><tr><td colspan="5">Chargement…</td></tr></tbody></table></div>
+</section>
 <section class="panel"><h2 id="formTitle">Ajouter un produit</h2><form id="productForm"><input id="pid" type="hidden">
 <div class="grid"><div><label>Nom *</label><input id="name" required></div><div><label>Prix en FCFA *</label><input id="price" type="number" min="0" required></div><div><label>Catégorie</label><select id="category"><option value="">Sans catégorie</option></select></div><div><label>Stock</label><input id="stock" type="number" min="0" value="0"></div></div>
 <label>Description</label><textarea id="description"></textarea><label>Photo</label><input id="photo" type="file" accept="image/*"><p>Pour garder la photo existante lors d'une modification, ne sélectionne aucun nouveau fichier.</p>
@@ -24,10 +30,38 @@ function msg(s){$("message").textContent=s}
 if(!window.supabase || typeof window.supabase.createClient!=="function"){msg("Erreur : la bibliothèque Supabase est chargée mais son interface JavaScript est introuvable. Recharge la page ou essaie un autre navigateur.");throw new Error("Supabase createClient indisponible")}
 const db=window.supabase.createClient(URL,KEY);
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-async function openAdmin(){ $("loginPanel").classList.add("hidden");$("dashboard").classList.remove("hidden");$("logout").classList.remove("hidden");await refresh()}
+async function openAdmin(){ $("loginPanel").classList.add("hidden");$("dashboard").classList.remove("hidden");$("logout").classList.remove("hidden");await Promise.all([refresh(),loadOrders()])}
 async function check(){try{msg("Vérification de la connexion à Supabase…");const result=await Promise.race([db.auth.getSession(),new Promise((_,reject)=>setTimeout(()=>reject(new Error("La vérification prend trop de temps. Vérifie Internet puis recharge la page.")),12000))]);const {data,error}=result;if(error)throw error;if(data.session?.user.id===ADMIN){await openAdmin()}else{$("loginPanel").classList.remove("hidden");msg("Session non trouvée. Connecte-toi avec ton compte administrateur.")}}catch(err){$("loginPanel").classList.remove("hidden");msg("Problème de connexion : "+(err.message||"erreur inconnue")+". Vérifie Internet puis recharge la page.")}}
 $("login").onsubmit=async e=>{e.preventDefault();$("loginBtn").disabled=true;const {data,error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error)msg("Connexion impossible : "+error.message);else if(data.user.id!==ADMIN){await db.auth.signOut();msg("Compte non autorisé.")}else{msg("Connexion réussie.");$("login").reset();await openAdmin()}$("loginBtn").disabled=false};
 $("logout").onclick=async()=>{await db.auth.signOut();$("dashboard").classList.add("hidden");$("logout").classList.add("hidden");$("loginPanel").classList.remove("hidden");msg("Déconnecté.")};
+async function loadOrders(){
+  $("ordersCount").textContent="Chargement des commandes…";
+  $("orderRows").innerHTML='<tr><td colspan="5">Chargement…</td></tr>';
+  const {data,error}=await db.from("commandes").select("*").order("created_at",{ascending:false});
+  if(error){$("ordersCount").textContent="Impossible de charger les commandes : "+error.message;$("orderRows").innerHTML='<tr><td colspan="5">Vérifie les droits administrateur dans Supabase.</td></tr>';return}
+  const orders=data||[];
+  $("ordersCount").textContent=orders.length+" commande(s) enregistrée(s)";
+  const statuses=["en_attente","confirmee","livree"];
+  const statusLabels={en_attente:"En attente",confirmee:"Confirmée",livree:"Livrée"};
+  $("orderRows").innerHTML=orders.length?orders.map(o=>{
+    let lines=o.articles;
+    if(typeof lines==="string"){try{lines=JSON.parse(lines)}catch(e){lines=[]}}
+    if(!Array.isArray(lines))lines=[];
+    const articleText=lines.map(a=>esc(a.nom||a.name||"Article")+" × "+Number(a.quantite||a.quantity||1)+" — "+Number(a.sous_total??a.subtotal??((a.prix_unitaire||a.prix||0)*(a.quantite||1))).toLocaleString("fr-FR")+" FCFA").join("<br>")||"Détails non disponibles";
+    const date=o.created_at?new Date(o.created_at).toLocaleString("fr-FR"):"—";
+    const client="<strong>"+esc(o.nom_client||"Client")+"</strong><br>"+esc(o.telephone||"")+"<br>"+esc([o.ville,o.quartier,o.adresse].filter(Boolean).join(", "))+(o.commentaire?"<br><em>"+esc(o.commentaire)+"</em>":"");
+    const current=statuses.includes(o.statut)?o.statut:"en_attente";
+    return '<tr><td>'+esc(date)+'</td><td>'+client+'</td><td>'+articleText+'</td><td><strong>'+Number(o.total||0).toLocaleString("fr-FR")+' FCFA</strong></td><td><select data-order-status="'+esc(o.id)+'">'+statuses.map(s=>'<option value="'+s+'" '+(s===current?'selected':'')+'>'+statusLabels[s]+'</option>').join("")+'</select></td></tr>';
+  }).join(""):'<tr><td colspan="5">Aucune commande pour le moment.</td></tr>';
+  document.querySelectorAll("[data-order-status]").forEach(sel=>sel.onchange=async()=>{
+    sel.disabled=true;
+    const {error}=await db.from("commandes").update({statut:sel.value}).eq("id",sel.dataset.orderStatus);
+    if(error){msg("Modification du statut impossible : "+error.message);await loadOrders()}
+    else msg("Statut de la commande mis à jour.");
+    sel.disabled=false;
+  });
+}
+$("refreshOrders").onclick=loadOrders;
 async function refresh(){msg("Chargement…");const [p,c]=await Promise.all([db.from("produits").select("*").order("id",{ascending:false}),db.from("categories").select("id,nom").order("nom")]);if(p.error){msg("Erreur produits : "+p.error.message);return}items=p.data||[];cats=c.error?[]:(c.data||[]);$("category").innerHTML='<option value="">Sans catégorie</option>'+cats.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.nom)+'</option>').join("");render();msg("Produits chargés. Tu peux les gérer.") }
 function render(){$("count").textContent=items.length+" produit(s)";$("rows").innerHTML=items.map(p=>'<tr><td>'+(p.image_url?'<img src="'+esc(p.image_url)+'">':'—')+'</td><td>'+esc(p.nom)+(p.actif===false?' (masqué)':'')+'</td><td>'+Number(p.prix||0).toLocaleString("fr-FR")+' FCFA</td><td>'+Number(p.stock||0)+'</td><td><button data-edit="'+p.id+'">Modifier</button><button class="danger" data-del="'+p.id+'">Supprimer</button></td></tr>').join("");document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>edit(b.dataset.edit));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>removeProduct(b.dataset.del))}
 function edit(id){const p=items.find(x=>String(x.id)===String(id));if(!p)return;$("pid").value=p.id;$("name").value=p.nom||"";$("price").value=p.prix||0;$("description").value=p.description||"";$("stock").value=p.stock||0;$("active").checked=p.actif!==false;$("category").value=p.categorie_id??"";$("photo").value="";$("formTitle").textContent="Modifier le produit";$("save").textContent="Enregistrer les modifications";$("cancel").classList.remove("hidden");window.scrollTo(0,0)}
