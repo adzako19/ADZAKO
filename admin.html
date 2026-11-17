@@ -6,6 +6,7 @@
 <header><h1>ADZAKO · ADMIN</h1><a href="index.html">Retour à la boutique</a><button id="logout" class="hidden">Déconnexion</button></header>
 <section id="loginPanel" class="panel"><h2>Connexion administrateur</h2><form id="login"><label>E-mail</label><input id="email" type="email" required autocomplete="username"><label>Mot de passe</label><input id="password" type="password" required autocomplete="current-password"><button id="loginBtn">Se connecter</button></form></section>
 <div id="dashboard" class="hidden">
+<section class="panel"><h2>Vue d’ensemble</h2><div class="grid"><div><p>Nombre de commandes</p><h2 id="statOrders">—</h2></div><div><p>Commandes en attente</p><h2 id="statPending">—</h2></div><div><p>Montant total commandé</p><h2 id="statRevenue">— FCFA</h2></div></div><p><small>Le montant total correspond à la somme des commandes enregistrées, pas nécessairement aux paiements déjà encaissés.</small></p></section>
 <section class="panel"><h2>Commandes clients</h2>
 <p>Consulte les commandes reçues et actualise leur statut.</p>
 <button type="button" id="refreshOrders">Actualiser les commandes</button>
@@ -41,6 +42,9 @@ async function loadOrders(){
   if(error){$("ordersCount").textContent="Impossible de charger les commandes : "+error.message;$("orderRows").innerHTML='<tr><td colspan="5">Vérifie les droits administrateur dans Supabase.</td></tr>';return}
   const orders=data||[];
   $("ordersCount").textContent=orders.length+" commande(s) enregistrée(s)";
+  $("statOrders").textContent=orders.length.toLocaleString("fr-FR");
+  $("statPending").textContent=orders.filter(o=>(o.statut||"en_attente")==="en_attente").length.toLocaleString("fr-FR");
+  $("statRevenue").textContent=orders.reduce((sum,o)=>sum+Number(o.total||0),0).toLocaleString("fr-FR")+" FCFA";
   const statuses=["en_attente","confirmee","livree"];
   const statusLabels={en_attente:"En attente",confirmee:"Confirmée",livree:"Livrée"};
   $("orderRows").innerHTML=orders.length?orders.map(o=>{
