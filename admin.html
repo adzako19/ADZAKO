@@ -12,7 +12,7 @@
 <p>Consulte les commandes reçues et actualise leur statut.</p>
 <button type="button" id="refreshOrders">Actualiser les commandes</button>
 <p id="ordersCount">Chargement des commandes…</p>
-<div class="tablewrap"><table><thead><tr><th>Date</th><th>Client</th><th>Articles</th><th>Total</th><th>Statut</th></tr></thead><tbody id="orderRows"><tr><td colspan="5">Chargement…</td></tr></tbody></table></div>
+<div class="tablewrap"><table><thead><tr><th>Date</th><th>Client</th><th>Articles</th><th>Total</th><th>Statut</th><th>Action</th></tr></thead><tbody id="orderRows"><tr><td colspan="6">Chargement…</td></tr></tbody></table></div>
 </section>
 <section class="panel"><h2 id="formTitle">Ajouter un produit</h2><form id="productForm"><input id="pid" type="hidden">
 <div class="grid"><div><label>Nom *</label><input id="name" required></div><div><label>Prix en FCFA *</label><input id="price" type="number" min="0" required></div><div><label>Catégorie</label><select id="category"><option value="">Sans catégorie</option></select></div><div><label>Stock</label><input id="stock" type="number" min="0" value="0"></div></div>
@@ -70,7 +70,7 @@ async function loadOrders(){
   $("ordersCount").textContent="Chargement des commandes…";
   $("orderRows").innerHTML='<tr><td colspan="5">Chargement…</td></tr>';
   const {data,error}=await db.from("commandes").select("*").order("created_at",{ascending:false});
-  if(error){$("ordersCount").textContent="Impossible de charger les commandes : "+error.message;$("orderRows").innerHTML='<tr><td colspan="5">Vérifie les droits administrateur dans Supabase.</td></tr>';return}
+  if(error){$("ordersCount").textContent="Impossible de charger les commandes : "+error.message;$("orderRows").innerHTML='<tr><td colspan="6">Vérifie les droits administrateur dans Supabase.</td></tr>';return}
   const orders=data||[];
   $("ordersCount").textContent=orders.length+" commande(s) enregistrée(s)";
   $("statOrders").textContent=orders.length.toLocaleString("fr-FR");
@@ -90,8 +90,10 @@ async function loadOrders(){
     const phone=String(o.telephone||"").replace(/\\D/g,"");
     const waText="Bonjour "+(o.nom_client||"")+" ! Nous vous contactons au sujet de votre commande ADZAKO : "+lines.map(a=>(a.nom||a.name||"Article")+" x "+Number(a.quantite||a.quantity||1)).join(", ")+". Total : "+Number(o.total||0).toLocaleString("fr-FR")+" FCFA. Votre commande est actuellement : "+statusLabels[current]+".";
     const waLink=phone?'<a class="whatsapp" href="https://wa.me/'+phone+'?text='+encodeURIComponent(waText)+'" target="_blank" rel="noopener">WhatsApp</a>':'';
-    return '<tr><td>'+esc(date)+'</td><td>'+client+'</td><td>'+articleText+'</td><td><strong>'+Number(o.total||0).toLocaleString("fr-FR")+' FCFA</strong></td><td><select data-order-status="'+esc(o.id)+'">'+statuses.map(s=>'<option value="'+s+'" '+(s===current?'selected':'')+'>'+statusLabels[s]+'</option>').join("")+'</select><br>'+waLink+'</td></tr>';
-  }).join(""):'<tr><td colspan="5">Aucune commande pour le moment.</td></tr>';
+    const canDelete=current==="en_attente" && o.stock_deduit===false;
+    const deleteAction=canDelete?'<button type="button" class="danger" data-delete-order="'+esc(o.id)+'">Supprimer</button>':'<small>—</small>';
+    return '<tr><td>'+esc(date)+'</td><td>'+client+'</td><td>'+articleText+'</td><td><strong>'+Number(o.total||0).toLocaleString("fr-FR")+' FCFA</strong></td><td><select data-order-status="'+esc(o.id)+'">'+statuses.map(s=>'<option value="'+s+'" '+(s===current?'selected':'')+'>'+statusLabels[s]+'</option>').join("")+'</select><br>'+waLink+'</td><td>'+deleteAction+'</td></tr>';
+  }).join(""):'<tr><td colspan="6">Aucune commande pour le moment.</td></tr>';
   document.querySelectorAll("[data-order-status]").forEach(sel=>sel.onchange=async()=>{
     const nouveauStatut=sel.value;
     sel.disabled=true;
@@ -112,6 +114,26 @@ async function loadOrders(){
       await Promise.all([loadOrders(),refresh()]);
     }
     sel.disabled=false;
+  });
+  document.querySelectorAll("[data-delete-order]").forEach(btn=>btn.onclick=async()=>{
+    const id=btn.dataset.deleteOrder;
+    if(!confirm("Supprimer définitivement cette commande en attente ? Cette action est irréversible."))return;
+    btn.disabled=true;
+    msg("Suppression de la commande…");
+    const {data,error}=await db.from("commandes").delete()
+      .eq("id",id).eq("statut","en_attente").eq("stock_deduit",false)
+      .select("id");
+    if(error){
+      msg("Suppression impossible : "+error.message);
+      await loadOrders();
+      return;
+    }
+    if(!data||data.length===0){
+      msg("Commande non supprimée : elle n’est plus en attente ou son stock a déjà été déduit.");
+    }else{
+      msg("Commande supprimée. Le stock n’a pas été modifié.");
+    }
+    await loadOrders();
   });
 }
 $("refreshOrders").onclick=loadOrders;
