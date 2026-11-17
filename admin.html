@@ -93,10 +93,24 @@ async function loadOrders(){
     return '<tr><td>'+esc(date)+'</td><td>'+client+'</td><td>'+articleText+'</td><td><strong>'+Number(o.total||0).toLocaleString("fr-FR")+' FCFA</strong></td><td><select data-order-status="'+esc(o.id)+'">'+statuses.map(s=>'<option value="'+s+'" '+(s===current?'selected':'')+'>'+statusLabels[s]+'</option>').join("")+'</select><br>'+waLink+'</td></tr>';
   }).join(""):'<tr><td colspan="5">Aucune commande pour le moment.</td></tr>';
   document.querySelectorAll("[data-order-status]").forEach(sel=>sel.onchange=async()=>{
+    const nouveauStatut=sel.value;
     sel.disabled=true;
-    const {error}=await db.from("commandes").update({statut:sel.value}).eq("id",sel.dataset.orderStatus);
-    if(error){msg("Modification du statut impossible : "+error.message);await loadOrders()}
-    else msg("Statut de la commande mis à jour.");
+    msg("Mise à jour du statut et vérification du stock…");
+    const {error}=await db.rpc("adzako_changer_statut_commande",{
+      p_commande_id:Number(sel.dataset.orderStatus),
+      p_nouveau_statut:nouveauStatut
+    });
+    if(error){
+      msg("Modification impossible : "+error.message);
+      await loadOrders();
+    }else{
+      msg(nouveauStatut==="confirmee"
+        ?"Commande confirmée : stock retiré automatiquement."
+        :nouveauStatut==="en_attente"
+          ?"Commande remise en attente : stock rétabli si nécessaire."
+          :"Commande marquée comme livrée.");
+      await Promise.all([loadOrders(),refresh()]);
+    }
     sel.disabled=false;
   });
 }
