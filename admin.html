@@ -1,12 +1,13 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADMIN - ADZAKO</title>
 <style>
-*{box-sizing:border-box}body{font-family:Arial;background:#fbf7f0;color:#332b22;margin:0;padding:16px}main{max-width:900px;margin:auto}header,.panel{background:white;border:1px solid #eadcc8;border-radius:12px;padding:18px;margin:14px 0}h1,h2{color:#8f682e}label{display:block;font-weight:bold;margin:12px 0 5px}input,textarea,select{width:100%;padding:11px;border:1px solid #cdbb9e;border-radius:7px;font-size:16px}input[type=checkbox]{width:auto}button{padding:11px 15px;background:#b58a45;color:white;border:0;border-radius:7px;font-weight:bold;margin:5px 4px 5px 0}button.danger{background:#a33}.whatsapp{display:inline-block;margin-top:7px;padding:9px 11px;background:#168a50;color:white;border-radius:7px;text-decoration:none;font-weight:bold;font-size:14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.hidden{display:none!important}#message{background:#f4eadb;padding:12px;border-radius:7px;white-space:pre-wrap}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:9px;border-bottom:1px solid #eadcc8}td img{width:55px;height:55px;object-fit:contain}
+*{box-sizing:border-box}body{font-family:Arial;background:#fbf7f0;color:#332b22;margin:0;padding:16px}main{max-width:900px;margin:auto}header,.panel{background:white;border:1px solid #eadcc8;border-radius:12px;padding:18px;margin:14px 0}h1,h2{color:#8f682e}label{display:block;font-weight:bold;margin:12px 0 5px}input,textarea,select{width:100%;padding:11px;border:1px solid #cdbb9e;border-radius:7px;font-size:16px}input[type=checkbox]{width:auto}button{padding:11px 15px;background:#b58a45;color:white;border:0;border-radius:7px;font-weight:bold;margin:5px 4px 5px 0}button.danger{background:#a33}.salesChart{display:flex;align-items:flex-end;gap:8px;min-height:150px;padding:12px 4px 4px;border-bottom:1px solid #eadcc8;overflow-x:auto}.salesBar{flex:1;min-width:38px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:145px}.salesBarFill{width:70%;min-width:20px;max-width:48px;background:#b58a45;border-radius:6px 6px 0 0;min-height:3px}.salesValue{font-size:11px;color:#6d5a42;text-align:center;white-space:nowrap}.salesLabel{font-size:11px;color:#6d5a42;text-align:center;white-space:nowrap}.whatsapp{display:inline-block;margin-top:7px;padding:9px 11px;background:#168a50;color:white;border-radius:7px;text-decoration:none;font-weight:bold;font-size:14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.hidden{display:none!important}#message{background:#f4eadb;padding:12px;border-radius:7px;white-space:pre-wrap}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:9px;border-bottom:1px solid #eadcc8}td img{width:55px;height:55px;object-fit:contain}
 </style></head><body><main>
 <header><h1>ADZAKO · ADMIN</h1><a href="index.html">Retour à la boutique</a><button id="logout" class="hidden">Déconnexion</button></header>
 <section id="loginPanel" class="panel"><h2>Connexion administrateur</h2><form id="login"><label>E-mail</label><input id="email" type="email" required autocomplete="username"><label>Mot de passe</label><input id="password" type="password" required autocomplete="current-password"><button id="loginBtn">Se connecter</button></form></section>
 <div id="dashboard" class="hidden">
 <section class="panel"><h2>Vue d’ensemble</h2><div class="grid"><div><p>Nombre de commandes</p><h2 id="statOrders">—</h2></div><div><p>Commandes en attente</p><h2 id="statPending">—</h2></div><div><p>Montant total commandé</p><h2 id="statRevenue">— FCFA</h2></div></div><p><small>Le montant total correspond à la somme des commandes enregistrées, pas nécessairement aux paiements déjà encaissés.</small></p></section>
+<section class="panel"><h2>Évolution des commandes</h2><p>Montants des commandes enregistrées, par jour et par mois.</p><h3>7 derniers jours</h3><div id="dailyChart" class="salesChart"></div><h3>6 derniers mois</h3><div id="monthlyChart" class="salesChart"></div><p><small>Les graphiques montrent les montants commandés, pas uniquement les paiements encaissés.</small></p></section>
 <section class="panel"><h2>Commandes clients</h2>
 <p>Consulte les commandes reçues et actualise leur statut.</p>
 <button type="button" id="refreshOrders">Actualiser les commandes</button>
@@ -35,6 +36,36 @@ async function openAdmin(){ $("loginPanel").classList.add("hidden");$("dashboard
 async function check(){try{msg("Vérification de la connexion à Supabase…");const result=await Promise.race([db.auth.getSession(),new Promise((_,reject)=>setTimeout(()=>reject(new Error("La vérification prend trop de temps. Vérifie Internet puis recharge la page.")),12000))]);const {data,error}=result;if(error)throw error;if(data.session?.user.id===ADMIN){await openAdmin()}else{$("loginPanel").classList.remove("hidden");msg("Session non trouvée. Connecte-toi avec ton compte administrateur.")}}catch(err){$("loginPanel").classList.remove("hidden");msg("Problème de connexion : "+(err.message||"erreur inconnue")+". Vérifie Internet puis recharge la page.")}}
 $("login").onsubmit=async e=>{e.preventDefault();$("loginBtn").disabled=true;const {data,error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error)msg("Connexion impossible : "+error.message);else if(data.user.id!==ADMIN){await db.auth.signOut();msg("Compte non autorisé.")}else{msg("Connexion réussie.");$("login").reset();await openAdmin()}$("loginBtn").disabled=false};
 $("logout").onclick=async()=>{await db.auth.signOut();$("dashboard").classList.add("hidden");$("logout").classList.add("hidden");$("loginPanel").classList.remove("hidden");msg("Déconnecté.")};
+function renderSalesCharts(orders){
+  const money=n=>Number(n||0).toLocaleString("fr-FR")+" F";
+  const daily=[],monthly=[];
+  const now=new Date();
+  for(let i=6;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);
+    daily.push({key:d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate(),label:d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"}),value:0});
+  }
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    monthly.push({key:d.getFullYear()+"-"+d.getMonth(),label:d.toLocaleDateString("fr-FR",{month:"short"}),value:0});
+  }
+  orders.forEach(o=>{
+    if(!o.created_at)return;
+    const d=new Date(o.created_at);if(Number.isNaN(d.getTime()))return;
+    const dk=d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate();
+    const mk=d.getFullYear()+"-"+d.getMonth();
+    const day=daily.find(x=>x.key===dk),month=monthly.find(x=>x.key===mk);
+    if(day)day.value+=Number(o.total||0);
+    if(month)month.value+=Number(o.total||0);
+  });
+  function draw(id,rows){
+    const max=Math.max(0,...rows.map(x=>x.value));
+    $(id).innerHTML=rows.map(x=>{
+      const h=max?Math.max(3,Math.round(x.value/max*105)):3;
+      return '<div class="salesBar"><span class="salesValue">'+(x.value?money(x.value):"—")+'</span><div class="salesBarFill" style="height:'+h+'px"></div><span class="salesLabel">'+esc(x.label)+'</span></div>';
+    }).join("");
+  }
+  draw("dailyChart",daily);draw("monthlyChart",monthly);
+}
 async function loadOrders(){
   $("ordersCount").textContent="Chargement des commandes…";
   $("orderRows").innerHTML='<tr><td colspan="5">Chargement…</td></tr>';
@@ -45,6 +76,7 @@ async function loadOrders(){
   $("statOrders").textContent=orders.length.toLocaleString("fr-FR");
   $("statPending").textContent=orders.filter(o=>(o.statut||"en_attente")==="en_attente").length.toLocaleString("fr-FR");
   $("statRevenue").textContent=orders.reduce((sum,o)=>sum+Number(o.total||0),0).toLocaleString("fr-FR")+" FCFA";
+  renderSalesCharts(orders);
   const statuses=["en_attente","confirmee","livree"];
   const statusLabels={en_attente:"En attente",confirmee:"Confirmée",livree:"Livrée"};
   $("orderRows").innerHTML=orders.length?orders.map(o=>{
