@@ -45,6 +45,27 @@ button:active,.whatsapp-float:active{transform:scale(.97)}
 @media(max-width:600px){.whatsapp-float{right:13px;bottom:13px;padding:12px 15px;font-size:13px}.hero img{animation-duration:16s}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}.reveal-on-scroll{opacity:1;transform:none}}
 
+/* Carrousel publicitaire premium ADZAKO */
+.promo-hero{display:block;min-height:0;padding:0;background:#fff;overflow:hidden}
+.promo-carousel{position:relative;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:center;gap:20px;min-height:330px;padding:28px 5% 58px;background:linear-gradient(115deg,#fff8ef 0%,#ffebd4 55%,#fff 100%);border-radius:9px;overflow:hidden}
+.promo-visual{height:270px;display:grid;place-items:center;min-width:0}
+.promo-visual img{width:100%;height:100%;max-height:270px;object-fit:contain;border-radius:8px;filter:drop-shadow(0 12px 16px #5d35151c);animation:adzakoFadeUp .55s ease both}
+.promo-copy{max-width:480px;animation:adzakoFadeUp .55s ease both}
+.promo-kicker{display:inline-block;color:#a95808;font-size:11px;font-weight:900;letter-spacing:1.7px;margin-bottom:8px}
+.promo-copy h1{font-size:clamp(25px,3.4vw,39px);line-height:1.12;margin:0 0 10px;color:#252525}
+.promo-copy p{font-size:14px;line-height:1.55;color:#5e5a55;margin:0 0 10px}
+.promo-price{font-size:19px;font-weight:900;color:#222;margin:10px 0 15px}
+.promo-actions{display:flex;flex-wrap:wrap;gap:9px}
+.promo-secondary{background:#fff;border:1px solid var(--orange);color:#a95808;padding:11px 17px;border-radius:5px;font-weight:800}
+.promo-secondary:hover{background:#fff6eb;transform:translateY(-2px)}
+.promo-controls{position:absolute;left:0;right:0;bottom:12px;display:flex;align-items:center;justify-content:center;gap:12px}
+.promo-arrow{width:30px;height:30px;border:1px solid #e8c9a8;border-radius:50%;background:#fff;color:#75400e;font-size:22px;line-height:1;display:grid;place-items:center}
+.promo-dots{display:flex;align-items:center;gap:7px}
+.promo-dot{width:8px;height:8px;padding:0;border:0;border-radius:50%;background:#d6b99c;transition:all .25s ease}
+.promo-dot.active{width:22px;border-radius:8px;background:var(--orange)}
+@media(max-width:650px){.promo-carousel{grid-template-columns:1fr;gap:8px;padding:18px 17px 54px;min-height:0;text-align:center}.promo-visual{height:170px}.promo-visual img{max-height:170px}.promo-copy{margin:auto}.promo-copy h1{font-size:25px}.promo-copy p{font-size:13px}.promo-price{font-size:17px;margin:7px 0 11px}.promo-actions{justify-content:center}.promo-controls{bottom:10px}}
+@media(prefers-reduced-motion:reduce){.promo-visual img,.promo-copy{animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -58,8 +79,12 @@ button:active,.whatsapp-float:active{transform:scale(.97)}
  <div class="nav-wrap"><nav class="nav"><a href="#accueil">Accueil</a><a href="#categoriesSection">Catégories</a><a href="#produits">Tous les produits</a><a href="#contact">Contact</a><a class="admin-link" href="admin.html">Administration</a></nav></div>
 </header>
 <main>
- <section class="hero" id="accueil" style="display:block;min-height:0;padding:0;background:#fff">
-  <img src="https://tdxqniqsotgiryulfyiq.supabase.co/storage/v1/object/public/produits/file_000000005f008210ab575a6bd731f3f4.png" alt="Bienvenue dans la boutique ADZAKO" style="display:block;width:100%;height:auto;max-height:420px;object-fit:contain;border-radius:8px">
+ <section class="hero promo-hero" id="accueil" aria-label="Sélection de produits ADZAKO">
+  <div class="promo-carousel" id="promoCarousel" aria-roledescription="carrousel">
+   <div class="promo-visual"><img id="promoImage" src="https://tdxqniqsotgiryulfyiq.supabase.co/storage/v1/object/public/produits/file_000000005f008210ab575a6bd731f3f4.png" alt="Bienvenue dans la boutique ADZAKO"></div>
+   <div class="promo-copy"><span class="promo-kicker" id="promoKicker">BIENVENUE CHEZ ADZAKO</span><h1 id="promoTitle">Découvrez nos sélections</h1><p id="promoDescription">Des articles choisis pour vous, disponibles au Sénégal.</p><div class="promo-price" id="promoPrice"></div><div class="promo-actions"><button class="primary" id="promoDiscover" type="button">Découvrir</button><button class="promo-secondary" id="promoOrder" type="button">Commander</button></div></div>
+   <div class="promo-controls"><button class="promo-arrow" id="promoPrev" type="button" aria-label="Bannière précédente">‹</button><div class="promo-dots" id="promoDots" aria-label="Choisir une bannière"></div><button class="promo-arrow" id="promoNext" type="button" aria-label="Bannière suivante">›</button></div>
+  </div>
  </section>
  <div class="benefits"><button class="benefit reveal-on-scroll" type="button" id="deliveryBenefit"><span class="benefit-icon">🚚</span><span><b>Livraison au Sénégal</b>Contactez-nous pour les modalités</span></button><button class="benefit" type="button" id="orderBenefit"><span class="benefit-icon">💬</span><span><b>Commande facile</b>Accédez à votre panier ou découvrez les produits</span></button><button class="benefit" type="button" id="trustBenefit"><span class="benefit-icon">🔒</span><span><b>Achat en confiance</b>Contactez le service client ADZAKO</span></button></div>
  <section id="categoriesSection" class="reveal-on-scroll"><div class="section-head"><div><h2>Nos catégories</h2><p>Trouvez rapidement ce que vous cherchez</p></div></div><div id="categories" class="category-list"><button class="category-button active" type="button" data-category="all">Toutes les catégories</button></div></section>
@@ -175,7 +200,28 @@ document.getElementById("checkoutForm").addEventListener("submit",async e=>{
   document.getElementById("checkoutContent").innerHTML='<div class="checkout-result"><b>Commande enregistrée avec succès !</b><br>Votre commande'+(orderId?" n° "+orderId:"")+' a été transmise à ADZAKO. Pour finaliser, envoyez les détails par WhatsApp.</div><a class="whatsapp-confirm" target="_blank" rel="noopener" href="https://wa.me/'+WHATSAPP_NUMBER+'?text='+waText+'">Confirmer sur WhatsApp</a>';
  }catch(err){alert("Impossible d’enregistrer la commande : "+err.message);button.disabled=false;button.textContent="Réessayer";}
 });
-async function loadStore(){try{const headers={"apikey":SUPABASE_PUBLISHABLE_KEY,"Authorization":"Bearer "+SUPABASE_PUBLISHABLE_KEY};const [cr,pr]=await Promise.all([fetch(SUPABASE_URL+"/rest/v1/categories?select=id,nom&order=nom.asc",{headers}),fetch(SUPABASE_URL+"/rest/v1/produits?select=*&order=id.desc",{headers})]);if(!cr.ok)throw new Error("Catégories : HTTP "+cr.status);if(!pr.ok)throw new Error("Produits : HTTP "+pr.status);categories=await cr.json();products=await pr.json();try{const rr=await fetch(SUPABASE_URL+"/rest/v1/avis_produits?select=id,produit_id,nom_client,note,commentaire,created_at&statut=eq.publie&order=created_at.desc",{headers});if(rr.ok)reviews=await rr.json()}catch(reviewError){console.warn("Avis indisponibles",reviewError)}renderCategories();renderProducts();renderCart()}catch(e){message("Impossible de charger les produits : "+e.message)}}
+let promoIndex=0,promoSlides=[],promoTimer=null;
+function renderPromoCarousel(){
+ const image=document.getElementById("promoImage"),title=document.getElementById("promoTitle"),description=document.getElementById("promoDescription"),price=document.getElementById("promoPrice"),kicker=document.getElementById("promoKicker"),dots=document.getElementById("promoDots"),discover=document.getElementById("promoDiscover"),order=document.getElementById("promoOrder");
+ if(!image||!title||!description||!price||!dots)return;
+ promoSlides=products.filter(p=>p.actif!==false&&p.image_url).slice(0,5);
+ if(promoTimer){clearInterval(promoTimer);promoTimer=null}
+ if(!promoSlides.length){image.alt="Bienvenue dans la boutique ADZAKO";title.textContent="Découvrez nos sélections";description.textContent="Des articles choisis pour vous, disponibles au Sénégal.";price.textContent="";kicker.textContent="BIENVENUE CHEZ ADZAKO";dots.innerHTML="";order.classList.add("hide");discover.textContent="Voir les produits";discover.onclick=()=>document.getElementById("produits").scrollIntoView({behavior:"smooth"});return}
+ order.classList.remove("hide");promoIndex=0;
+ function showSlide(index){
+  promoIndex=(index+promoSlides.length)%promoSlides.length;const p=promoSlides[promoIndex];
+  image.src=p.image_url;image.alt=p.nom||"Produit ADZAKO";title.textContent=p.nom||"Un produit ADZAKO";description.textContent=p.description||"Découvrez cet article dans notre boutique.";price.textContent=money(p.prix);kicker.textContent="À DÉCOUVRIR CHEZ ADZAKO";
+  image.style.animation="none";void image.offsetWidth;image.style.animation="";const copy=document.querySelector(".promo-copy");copy.style.animation="none";void title.offsetWidth;copy.style.animation="";
+  [...dots.children].forEach((dot,i)=>{dot.classList.toggle("active",i===promoIndex);dot.setAttribute("aria-current",i===promoIndex?"true":"false")});
+  discover.onclick=()=>document.getElementById("produits").scrollIntoView({behavior:"smooth"});
+  order.onclick=()=>addToCart(p.id,productColors(p)[0]||"");
+ }
+ dots.innerHTML="";promoSlides.forEach((p,i)=>{const dot=document.createElement("button");dot.type="button";dot.className="promo-dot";dot.setAttribute("aria-label","Afficher la bannière "+(i+1));dot.onclick=()=>showSlide(i);dots.appendChild(dot)});
+ document.getElementById("promoPrev").onclick=()=>showSlide(promoIndex-1);document.getElementById("promoNext").onclick=()=>showSlide(promoIndex+1);showSlide(0);
+ if(promoSlides.length>1&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches)promoTimer=setInterval(()=>showSlide(promoIndex+1),6000);
+}
+
+async function loadStore(){try{const headers={"apikey":SUPABASE_PUBLISHABLE_KEY,"Authorization":"Bearer "+SUPABASE_PUBLISHABLE_KEY};const [cr,pr]=await Promise.all([fetch(SUPABASE_URL+"/rest/v1/categories?select=id,nom&order=nom.asc",{headers}),fetch(SUPABASE_URL+"/rest/v1/produits?select=*&order=id.desc",{headers})]);if(!cr.ok)throw new Error("Catégories : HTTP "+cr.status);if(!pr.ok)throw new Error("Produits : HTTP "+pr.status);categories=await cr.json();products=await pr.json();try{const rr=await fetch(SUPABASE_URL+"/rest/v1/avis_produits?select=id,produit_id,nom_client,note,commentaire,created_at&statut=eq.publie&order=created_at.desc",{headers});if(rr.ok)reviews=await rr.json()}catch(reviewError){console.warn("Avis indisponibles",reviewError)}renderCategories();renderProducts();renderCart();renderPromoCarousel()}catch(e){message("Impossible de charger les produits : "+e.message)}}
 renderCart();initAdzakoReveal();loadStore();
 </script>
 </body>
