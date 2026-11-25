@@ -108,7 +108,7 @@ button:active,.whatsapp-float:active{transform:scale(.97)}
  </section>
  <div class="benefits"><button class="benefit reveal-on-scroll" type="button" id="deliveryBenefit"><span class="benefit-icon">🚚</span><span><b>Livraison partout</b></span></button><button class="benefit" type="button" id="orderBenefit"><span class="benefit-icon">💬</span><span><b>Commande simple et rapide</b>Choisissez vos articles et passez commande en quelques clics.</span></button><button class="benefit" type="button" id="trustBenefit"><span class="benefit-icon">🔒</span><span><b>Service client à votre écoute</b>Une question ? Contactez ADZAKO sur WhatsApp pour obtenir de l’aide.</span></button></div>
  <section id="categoriesSection" class="reveal-on-scroll"><div class="section-head"><div><h2>Nos catégories</h2><p>Trouvez rapidement ce que vous cherchez</p></div></div><div id="categories" class="category-list"><button class="category-button active" type="button" data-category="all">Toutes les catégories</button></div></section>
- <section id="produits" class="reveal-on-scroll"><div class="section-head"><div><h2>Nos produits</h2><p>Découvrez la sélection disponible chez ADZAKO</p></div></div><div class="product-tools" aria-label="Filtres et tri des produits"><label>Prix minimum <input id="priceMin" type="number" min="0" inputmode="numeric" placeholder="0"></label><label>Prix maximum <input id="priceMax" type="number" min="0" inputmode="numeric" placeholder="Sans limite"></label><label class="sort-tool">Trier par <select id="productSort"><option value="default">Recommandés</option><option value="price-asc">Prix croissant</option><option value="price-desc">Prix décroissant</option><option value="newest">Plus récents</option></select></label><label class="stock-tool"><input id="inStockOnly" type="checkbox"> En stock uniquement</label><button id="resetProductFilters" type="button">Réinitialiser</button></div><p id="message" class="status" role="status">Chargement des produits…</p><div id="liste-produits" class="products"></div></section>
+ <section id="produits" class="reveal-on-scroll"><div class="section-head"><div><h2>Nos produits</h2><p>Découvrez la sélection disponible chez ADZAKO</p></div></div><p id="message" class="status" role="status">Chargement des produits…</p><div id="liste-produits" class="products"></div></section>
  <section class="contact reveal-on-scroll" id="contact"><h2>Besoin d'aide pour commander ?</h2><p>Notre équipe est disponible pour répondre à vos questions et vous accompagner.</p><button class="primary" type="button" onclick="commander('Bonjour, je souhaite obtenir des informations sur ADZAKO.')">Contacter ADZAKO sur WhatsApp</button></section>
 </main>
 <a class="whatsapp-float" href="https://wa.me/221771260962?text=Bonjour%20ADZAKO%2C%20je%20souhaite%20des%20informations." target="_blank" rel="noopener" aria-label="Contacter ADZAKO sur WhatsApp"><span class="wa-icon">☏</span><span>WhatsApp</span></a>
@@ -137,7 +137,7 @@ button:active,.whatsapp-float:active{transform:scale(.97)}
 const SUPABASE_URL="https://tdxqniqsotgiryulfyiq.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_ptl1fYDMKbBKQTOQKatUew_hpUNAUNh";
 const WHATSAPP_NUMBER="221771260962";
-let categories=[],products=[],reviews=[],selectedCategory="all",searchTerm="",productSort="default",minProductPrice="",maxProductPrice="",inStockOnly=false;
+let categories=[],products=[],reviews=[],selectedCategory="all",searchTerm="";
 let cart=JSON.parse(localStorage.getItem("adzako_cart")||"[]");
 let selectedColors={};
 let adzakoRevealObserver=null;
@@ -203,16 +203,9 @@ function renderProducts(){
   const categoryName=categories.find(cat=>String(cat.id)===String(p.categorie_id))?.nom||p.categorie||"";
   const searchable=normalizeSearch([p.nom,p.description,categoryName].join(" "));
   if(terms.length&&!terms.every(term=>searchable.includes(term)))return false;
-  const productPrice=Number(p.prix)||0;
-  if(minProductPrice!==""&&productPrice<Number(minProductPrice))return false;
-  if(maxProductPrice!==""&&productPrice>Number(maxProductPrice))return false;
-  if(inStockOnly&&Number(p.stock)<=0)return false;
   return true;
  });
- if(productSort==="price-asc")shown.sort((a,b)=>(Number(a.prix)||0)-(Number(b.prix)||0));
- else if(productSort==="price-desc")shown.sort((a,b)=>(Number(b.prix)||0)-(Number(a.prix)||0));
- else if(productSort==="newest")shown.sort((a,b)=>(new Date(b.created_at||0).getTime()||0)-(new Date(a.created_at||0).getTime()||0));
- if(!shown.length){const e=document.createElement("div");e.className="empty";e.textContent=searchTerm?"Aucun produit ne correspond à votre recherche.":"Aucun produit ne correspond à ces filtres.";box.appendChild(e);message("0 article disponible.");return}
+ if(!shown.length){const e=document.createElement("div");e.className="empty";e.textContent=searchTerm?"Aucun produit ne correspond à votre recherche.":"Aucun produit disponible pour le moment.";box.appendChild(e);message("0 article disponible.");return}
  message(shown.length+" article(s) disponible(s).");
  shown.forEach(p=>{
   const card=document.createElement("article");card.className="product reveal-on-scroll";
@@ -262,11 +255,6 @@ document.getElementById("searchForm").addEventListener("submit",e=>{e.preventDef
 const searchInput=document.getElementById("searchInput");
 searchInput.addEventListener("input",e=>{searchTerm=e.target.value.trim();if(searchTerm)selectedCategory="all";renderCategories();renderProducts()});
 searchInput.addEventListener("search",e=>{searchTerm=e.target.value.trim();if(searchTerm)selectedCategory="all";renderCategories();renderProducts()});
-document.getElementById("priceMin").addEventListener("input",e=>{minProductPrice=e.target.value;renderProducts()});
-document.getElementById("priceMax").addEventListener("input",e=>{maxProductPrice=e.target.value;renderProducts()});
-document.getElementById("productSort").addEventListener("change",e=>{productSort=e.target.value;renderProducts()});
-document.getElementById("inStockOnly").addEventListener("change",e=>{inStockOnly=e.target.checked;renderProducts()});
-document.getElementById("resetProductFilters").addEventListener("click",()=>{minProductPrice="";maxProductPrice="";productSort="default";inStockOnly=false;document.getElementById("priceMin").value="";document.getElementById("priceMax").value="";document.getElementById("productSort").value="default";document.getElementById("inStockOnly").checked=false;renderProducts()});
 function cartTotalValue(){return cart.reduce((sum,line)=>{const p=products.find(x=>String(x.id)===String(line.id));return sum+(p?Number(p.prix||0)*line.qty:0)},0)}
 function renderCheckoutItems(){const box=document.getElementById("checkoutItems");box.innerHTML="";cart.forEach(line=>{const p=products.find(x=>String(x.id)===String(line.id));if(!p)return;const row=document.createElement("div");row.style.cssText="display:grid;grid-template-columns:1fr 90px;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #eee;font-size:13px";const label=document.createElement("div");label.textContent=p.nom+(line.couleur?" — "+line.couleur:"")+" · "+money(p.prix);const qty=document.createElement("label");qty.style.cssText="display:grid;gap:4px;font-weight:bold;font-size:12px";qty.textContent="Quantité";const input=document.createElement("input");input.type="number";input.min="1";input.max=String(p.stock||1);input.value=String(line.qty);input.required=true;input.style.cssText="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:5px";input.onchange=()=>{let n=Math.max(1,Math.min(Number(p.stock||1),Math.floor(Number(input.value)||1)));line.qty=n;input.value=String(n);saveCart();renderCheckoutItems()};qty.appendChild(input);row.append(label,qty);box.appendChild(row)});document.getElementById("checkoutOrderTotal").textContent="Total des articles : "+money(cartTotalValue())+". Les frais de livraison seront confirmés par ADZAKO."}
 function openCheckout(){if(!cart.length){alert("Votre panier est vide.");return}try{renderCheckoutItems();const overlay=document.getElementById("checkoutOverlay");closeCart();overlay.classList.add("open");overlay.style.display="flex";overlay.setAttribute("aria-hidden","false");}catch(error){alert("Impossible d’ouvrir le formulaire : "+error.message)}}
