@@ -195,8 +195,15 @@ function ensureProductLightbox(){
 }
 function renderProducts(){
  const box=document.getElementById("liste-produits");box.innerHTML="";
- const normalizeSearch=value=>String(value??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
- const shown=products.filter(p=>p.actif!==false&&(searchTerm?normalizeSearch([p.nom,p.description,p.categorie].join(" ")).includes(normalizeSearch(searchTerm)):(selectedCategory==="all"||String(p.categorie_id)===String(selectedCategory))));
+ const normalizeSearch=value=>String(value??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+ const terms=normalizeSearch(searchTerm).split(/\s+/).filter(Boolean);
+ const shown=products.filter(p=>{
+  if(p.actif===false)return false;
+  if(!terms.length)return selectedCategory==="all"||String(p.categorie_id)===String(selectedCategory);
+  const categoryName=categories.find(cat=>String(cat.id)===String(p.categorie_id))?.nom||p.categorie||"";
+  const searchable=normalizeSearch([p.nom,p.description,categoryName].join(" "));
+  return terms.every(term=>searchable.includes(term));
+ });
  if(!shown.length){const e=document.createElement("div");e.className="empty";e.textContent=searchTerm?"Aucun produit ne correspond à votre recherche.":"Aucun produit disponible dans cette sélection pour le moment.";box.appendChild(e);message(products.length+" produit(s) chargé(s).");return}
  message(shown.length+" article(s) disponible(s).");
  shown.forEach(p=>{
@@ -243,10 +250,10 @@ document.getElementById("orderBenefit").addEventListener("click",()=>{if(cart.le
 document.getElementById("trustBenefit").addEventListener("click",()=>commander("je souhaite contacter le service client ADZAKO pour être rassuré et obtenir de l’aide."));
 function closeCart(){document.getElementById("cartOverlay").classList.remove("open")}
 document.getElementById("openCart").onclick=openCart;document.getElementById("closeCart").onclick=closeCart;document.getElementById("cartOverlay").addEventListener("click",e=>{if(e.target.id==="cartOverlay")closeCart()});
-document.getElementById("searchForm").addEventListener("submit",e=>{e.preventDefault();searchTerm=document.getElementById("searchInput").value.trim().toLowerCase();renderProducts();document.getElementById("produits").scrollIntoView({behavior:"smooth"})});
+document.getElementById("searchForm").addEventListener("submit",e=>{e.preventDefault();searchTerm=document.getElementById("searchInput").value.trim();if(searchTerm)selectedCategory="all";renderCategories();renderProducts();document.getElementById("produits").scrollIntoView({behavior:"smooth"})});
 const searchInput=document.getElementById("searchInput");
-searchInput.addEventListener("input",e=>{searchTerm=e.target.value.trim();if(searchTerm)selectedCategory="all";renderProducts()});
-searchInput.addEventListener("search",e=>{searchTerm=e.target.value.trim();if(searchTerm)selectedCategory="all";renderProducts()});
+searchInput.addEventListener("input",e=>{searchTerm=e.target.value.trim();if(searchTerm)selectedCategory="all";renderCategories();renderProducts()});
+searchInput.addEventListener("search",e=>{searchTerm=e.target.value.trim();if(searchTerm)selectedCategory="all";renderCategories();renderProducts()});
 function cartTotalValue(){return cart.reduce((sum,line)=>{const p=products.find(x=>String(x.id)===String(line.id));return sum+(p?Number(p.prix||0)*line.qty:0)},0)}
 function renderCheckoutItems(){const box=document.getElementById("checkoutItems");box.innerHTML="";cart.forEach(line=>{const p=products.find(x=>String(x.id)===String(line.id));if(!p)return;const row=document.createElement("div");row.style.cssText="display:grid;grid-template-columns:1fr 90px;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #eee;font-size:13px";const label=document.createElement("div");label.textContent=p.nom+(line.couleur?" — "+line.couleur:"")+" · "+money(p.prix);const qty=document.createElement("label");qty.style.cssText="display:grid;gap:4px;font-weight:bold;font-size:12px";qty.textContent="Quantité";const input=document.createElement("input");input.type="number";input.min="1";input.max=String(p.stock||1);input.value=String(line.qty);input.required=true;input.style.cssText="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:5px";input.onchange=()=>{let n=Math.max(1,Math.min(Number(p.stock||1),Math.floor(Number(input.value)||1)));line.qty=n;input.value=String(n);saveCart();renderCheckoutItems()};qty.appendChild(input);row.append(label,qty);box.appendChild(row)});document.getElementById("checkoutOrderTotal").textContent="Total des articles : "+money(cartTotalValue())+". Les frais de livraison seront confirmés par ADZAKO."}
 function openCheckout(){if(!cart.length){alert("Votre panier est vide.");return}try{renderCheckoutItems();const overlay=document.getElementById("checkoutOverlay");closeCart();overlay.classList.add("open");overlay.style.display="flex";overlay.setAttribute("aria-hidden","false");}catch(error){alert("Impossible d’ouvrir le formulaire : "+error.message)}}
